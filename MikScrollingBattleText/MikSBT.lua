@@ -19,14 +19,14 @@ local string_sub = string.sub
 local string_gsub = string.gsub
 local string_match = string.match
 local math_floor = math.floor
-local GetSpellInfo = GetSpellInfo
+local GetSpellInfo = C_Spell.GetSpellInfo
 
 
 -------------------------------------------------------------------------------
 -- Mod constants
 -------------------------------------------------------------------------------
 
-local TOC_VERSION = string_gsub(GetAddOnMetadata("MikScrollingBattleText", "Version"), "wowi:revision", 0)
+local TOC_VERSION = string_gsub(C_AddOns.GetAddOnMetadata("MikScrollingBattleText", "Version"), "wowi:revision", 0)
 mod.VERSION = tonumber(select(3, string_find(TOC_VERSION, "(%d+%.%d+)")))
 mod.VERSION_STRING = "v" .. TOC_VERSION
 mod.SVN_REVISION = tonumber(select(3, string_find(TOC_VERSION, "%d+%.%d+.(%d+)")))
