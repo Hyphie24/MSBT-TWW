@@ -104,7 +104,7 @@ end
 -- ****************************************************************************
 local function OnSpellCast(unitID, spellID)
 	-- Ignore the cast if the spell name is excluded.
-	local spellName = GetSpellInfo(spellID) or UNKNOWN
+	local spellName = C_Spell.GetSpellInfo(spellID) or UNKNOWN
 	local cooldownExclusions = MSBTProfiles.currentProfile.cooldownExclusions
 	if (cooldownExclusions[spellName] or cooldownExclusions[spellID]) then return end
 
@@ -162,7 +162,7 @@ local function OnUpdateCooldown(cooldownType, cooldownFunc)
 		local _, duration, enabled = cooldownFunc(cooldownID)
 		if (enabled == 1) then
 			-- Add the cooldown to the active cooldowns list if the cooldown is longer than the cooldown threshold or it's required to show.
-			local cooldownName = GetSpellInfo(cooldownID)
+			local cooldownName = C_Spell.GetSpellInfo(cooldownID)
 			local ignoreCooldownThreshold = MSBTProfiles.currentProfile.ignoreCooldownThreshold
 			if (duration >= MSBTProfiles.currentProfile.cooldownThreshold or ignoreCooldownThreshold[cooldownName] or ignoreCooldownThreshold[cooldownID]) then
 				activeCooldowns[cooldownType][cooldownID] = duration
@@ -191,7 +191,7 @@ local function OnUpdateCooldown(cooldownType, cooldownFunc)
 			if (playerClass == "DEATHKNIGHT" and duration == RUNE_COOLDOWN and cooldownType == "player" and not runeCooldownAbilities[cooldownID]) then duration = -1 end
 
 			-- Add the cooldown to the active cooldowns list if the cooldown is longer than the cooldown threshold or it's required to show.
-			local cooldownName = GetSpellInfo(cooldownID)
+			local cooldownName = C_Spell.GetSpellInfo(cooldownID)
 			local ignoreCooldownThreshold = MSBTProfiles.currentProfile.ignoreCooldownThreshold
 			if (duration >= MSBTProfiles.currentProfile.cooldownThreshold or ignoreCooldownThreshold[cooldownName] or ignoreCooldownThreshold[cooldownID]) then
 				activeCooldowns[cooldownType][cooldownID] = duration
@@ -241,7 +241,7 @@ local function OnUpdate(frame, elapsed)
 		local currentTime = GetTime()
 		for cooldownType, cooldowns in pairs(activeCooldowns) do
 			local cooldownFunc = (cooldownType == "item") and C_Container.GetItemCooldown or GetSpellCooldown
-			local infoFunc = (cooldownType == "item") and GetItemInfo or GetSpellInfo
+			local infoFunc = (cooldownType == "item") and GetItemInfo or C_Spell.GetSpellInfo
 			for cooldownID, remainingDuration in pairs(cooldowns) do
 				-- Ensure the cooldown is still valid.
 				local startTime, duration, enabled = cooldownFunc(cooldownID)
@@ -466,7 +466,7 @@ _, playerClass = UnitClass("player")
 hooksecurefunc("UseAction", UseActionHook)
 hooksecurefunc("UseInventoryItem", UseInventoryItemHook)
 hooksecurefunc(C_Container, "UseContainerItem", UseContainerItemHook)
---hooksecurefunc("UseItemByName", UseItemByNameHook)
+hooksecurefunc(C_Item, "UseItemByName", UseItemByNameHook)
 
 -- Specify the abilities that reset cooldowns.
 resetAbilities[SPELLID_COLD_SNAP] = true
