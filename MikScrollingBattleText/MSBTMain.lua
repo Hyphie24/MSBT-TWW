@@ -30,7 +30,7 @@ local math_abs = math.abs
 local bit_bor = bit.bor
 local FormatLargeNumber = FormatLargeNumber
 local GetTime = GetTime
-local GetSpellInfo = GetSpellInfo
+local GetSpellInfo = C_Spell.GetSpellInfo
 local EraseTable = MikSBT.EraseTable
 local GetSkillName = MikSBT.GetSkillName
 local ShortenNumber = MikSBT.ShortenNumber
@@ -1152,14 +1152,14 @@ local function ParserEventsHandler(parserEvent)
 	-- Attempt to get the texture for the event if icons are not disabled.
 	local effectTexture
 	if (not currentProfile.skillIconsDisabled and IsScrollAreaIconShown(eventSettings.scrollArea)) then
-		if (skillID) then _, _, effectTexture = GetSpellInfo(skillID) end
+		if (skillID) then _, _, effectTexture = C_Spell.GetSpellInfo(skillID) end
 
 		-- Override texture for dispels and interrupts.
 		if ((eventType == "dispel" or eventType == "interrupt" or (eventType == "miss" and parserEvent.missType == "RESIST")) and parserEvent.extraSkillID) then
-			_, _, effectTexture = GetSpellInfo(parserEvent.extraSkillID)
+			_, _, effectTexture = C_Spell.GetSpellInfo(parserEvent.extraSkillID)
 		end
 		if (not effectTexture and effectName) then
-			_, _, effectTexture = GetSpellInfo(effectName)
+			_, _, effectTexture = C_Spell.GetSpellInfo(effectName)
 		end
 	end
 
@@ -1529,10 +1529,9 @@ ignoreAuras[SPELL_BLINK] = true
 ignoreAuras[SPELL_RAIN_OF_FIRE] = true
 
 -- Get localized off-hand trailer and convert to a lua search pattern.
---if (SPELL_BLOOD_STRIKE and SPELL_BLOOD_STRIKE ~= UNKNOWN) then
-	--offHandTrailer = string_gsub(SPELL_BLOOD_STRIKE_OFF_HAND, SPELL_BLOOD_STRIKE, "")
-	--offHandPattern = string_gsub(SPELL_BLOOD_STRIKE, "([%^%(%)%.%[%]%*%+%-%?])", "%%%1")
---end
+if (type(SPELL_BLOOD_STRIKE) == "string" and SPELL_BLOOD_STRIKE ~= UNKNOWN) then
+    offHandPattern = string.gsub(SPELL_BLOOD_STRIKE, "([%^%(%)%.%[%]%*%+%-%?])", "%%%1")
+end
 
 
 
