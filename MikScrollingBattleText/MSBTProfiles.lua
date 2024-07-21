@@ -3261,6 +3261,7 @@ end
 -- ****************************************************************************
 local function SetupBlizzardOptions()
 	-- Create a container frame for the Blizzard options area.
+	local category = Settings.RegisterCanvasLayoutCategory(frame, "MikScrollingBattleText")
 	local frame = CreateFrame("Frame")
 	frame.name = "MikScrollingBattleText"
 
@@ -3276,8 +3277,16 @@ local function SetupBlizzardOptions()
 	)
 
 	-- Add the frame as a new category to Blizzard's interface options.
+	if InterfaceOptions_AddCategory then
 	InterfaceOptions_AddCategory(frame)
+else
+	local category, layout = Settings.RegisterCanvasLayoutCategory(frame, frame.name);
+	Settings.RegisterAddOnCategory(category);
+	--addon.settingsCategory = category
 end
+
+end
+
 
 
 -- ****************************************************************************
