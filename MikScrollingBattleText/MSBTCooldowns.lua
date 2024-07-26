@@ -88,9 +88,19 @@ local itemCooldownsEnabled = true
 -- ****************************************************************************
 local function GetCooldownTexture(cooldownType, cooldownID)
 	if (cooldownType == "item") then
-		return select(ITEM_INFO_TEXTURE_POSITION, GetItemInfo(cooldownID))
+		local itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, itemSellPrice = GetItemInfo(cooldownID)
+		return itemTexture
 	else
-		return GetSpellTexture(cooldownID)
+
+		local iconID = C_Spell.GetSpellTexture(cooldownID)
+		if iconID then
+			return iconID
+		else
+			local spellInfo = C_Spell.GetSpellInfo(cooldownID)
+			if spellInfo then
+				return spellInfo.iconID
+			end
+		end
 	end
 end
 

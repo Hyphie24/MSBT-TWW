@@ -1152,16 +1152,28 @@ local function ParserEventsHandler(parserEvent)
 	-- Attempt to get the texture for the event if icons are not disabled.
 	local effectTexture
 	if (not currentProfile.skillIconsDisabled and IsScrollAreaIconShown(eventSettings.scrollArea)) then
-		if (skillID) then _, _, effectTexture = C_Spell.GetSpellInfo(skillID) end
+		if (skillID) then
+			local spellInfo = C_Spell.GetSpellInfo(skillID)
+			if spellInfo then
+				effectTexture = spellInfo.iconID
+			end
+		end
 
 		-- Override texture for dispels and interrupts.
 		if ((eventType == "dispel" or eventType == "interrupt" or (eventType == "miss" and parserEvent.missType == "RESIST")) and parserEvent.extraSkillID) then
-			_, _, effectTexture = C_Spell.GetSpellInfo(parserEvent.extraSkillID)
+			local extraSpellInfo = C_Spell.GetSpellInfo(parserEvent.extraSkillID)
+			if extraSpellInfo then
+				effectTexture = extraSpellInfo.iconID
+			end
 		end
 		if (not effectTexture and effectName) then
-			_, _, effectTexture = C_Spell.GetSpellInfo(effectName)
+			local effectSpellInfo = C_Spell.GetSpellInfo(effectName)
+			if effectSpellInfo then
+				effectTexture = effectSpellInfo.iconID
+			end
 		end
 	end
+
 
 	-- Event is not eligible to be merged so just display it now without processing the impossible fields.
 	if (not mergeEligible) then
@@ -1477,7 +1489,7 @@ end
 
 -- Setup event frame.
 eventFrame:Hide()
-eventFrame:SetScript("OnEvent", function (self, event, ...) if (self[event]) then self[event](self, ...) end end)
+eventFrame:SetScript("OnEvent", function(self, event, ...) if (self[event]) then self[event](self, ...) end end)
 eventFrame:SetScript("OnUpdate", OnUpdateEventFrame)
 
 -- Setup throttle frame.
