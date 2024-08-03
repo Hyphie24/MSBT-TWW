@@ -88,9 +88,17 @@ local itemCooldownsEnabled = true
 -- ****************************************************************************
 local function GetCooldownTexture(cooldownType, cooldownID)
 	if (cooldownType == "item") then
-		return select(ITEM_INFO_TEXTURE_POSITION, GetItemInfo(cooldownID))
-	else
-		return GetSpellTexture(cooldownID)
+	local itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, itemSellPrice = GetItemInfo(cooldownID)
+		return itemTexture	else
+		local iconID = C_Spell.GetSpellTexture(cooldownID)
+		if iconID then
+			return iconID
+		else
+			local spellInfo = C_Spell.GetSpellInfo(cooldownID)
+			if spellInfo then
+				return spellInfo.iconID
+			end
+		end
 	end
 end
 
@@ -104,7 +112,7 @@ end
 -- ****************************************************************************
 local function OnSpellCast(unitID, spellID)
 	-- Ignore the cast if the spell name is excluded.
-	local spellName = C_Spell.GetSpellInfo(spellID) or UNKNOWN
+	local spellName = GetSpellInfo(spellID) or UNKNOWN
 	local cooldownExclusions = MSBTProfiles.currentProfile.cooldownExclusions
 	if (cooldownExclusions[spellName] or cooldownExclusions[spellID]) then return end
 
@@ -157,107 +165,60 @@ local function OnUpdateCooldown(cooldownType, cooldownFunc)
 	if (not delayedCooldowns[cooldownType] or not activeCooldowns[cooldownType]) then return end
 
 	-- Start delayed cooldowns once they have been used.
-
 	for cooldownID in pairs(delayedCooldowns[cooldownType]) do
-
 		-- Check if the cooldown is enabled yet.
-
 		local _, duration, enabled = cooldownFunc(cooldownID)
-
 		if (enabled == 1) then
-
 			-- Add the cooldown to the active cooldowns list if the cooldown is longer than the cooldown threshold or it's required to show.
-
 			local cooldownName = GetSpellInfo(cooldownID)
-
 			local ignoreCooldownThreshold = MSBTProfiles.currentProfile.ignoreCooldownThreshold
-
 			if (duration >= MSBTProfiles.currentProfile.cooldownThreshold or ignoreCooldownThreshold[cooldownName] or ignoreCooldownThreshold[cooldownID]) then
 				activeCooldowns[cooldownType][cooldownID] = duration
 
 				-- Force an update.
-
 				updateDelay = MIN_COOLDOWN_UPDATE_DELAY
 
 				-- Check if the event frame is not visible and make it visible so the OnUpdate events start firing.
-
 				-- This is done to keep the number of OnUpdate events down to a minimum for better performance.
-
 				if (not eventFrame:IsVisible()) then eventFrame:Show() end
-
 			end
 
 			-- Remove the cooldown from the delayed cooldowns list.
-
 			delayedCooldowns[cooldownType][cooldownID] = nil
-
 		end
-
 	end
 
-local cooldownID = lastCooldownIDs[cooldownType]
+	-- Add the last successful spell to the active cooldowns if necessary.
+	local cooldownID = lastCooldownIDs[cooldownType]
+	if (cooldownID) then
+		-- Make sure the spell cooldown is enabled.
+		local _, duration, enabled = cooldownFunc(cooldownID)
+		if (enabled == 1) then
+			-- XXX This is a hack to compensate for Blizzard's API reporting incorrect cooldown information for death knights.
+			-- XXX Ignore cooldowns that are the same duration as a rune cooldown except for the abilities that truly have the same cooldown.
+			if (playerClass == "DEATHKNIGHT" and duration == RUNE_COOLDOWN and cooldownType == "player" and not runeCooldownAbilities[cooldownID]) then duration = -1 end
 
-if cooldownID then
+			-- Add the cooldown to the active cooldowns list if the cooldown is longer than the cooldown threshold or it's required to show.
+			local cooldownName = GetSpellInfo(cooldownID)
+			local ignoreCooldownThreshold = MSBTProfiles.currentProfile.ignoreCooldownThreshold
+			if (duration >= MSBTProfiles.currentProfile.cooldownThreshold or ignoreCooldownThreshold[cooldownName] or ignoreCooldownThreshold[cooldownID]) then
+				activeCooldowns[cooldownType][cooldownID] = duration
 
-    -- Null check for the function before calling it
+				-- Force an update.
+				updateDelay = MIN_COOLDOWN_UPDATE_DELAY
 
-    if not cooldownFunc then 
+				-- Check if the event frame is not visible and make it visible so the OnUpdate events start firing.
+				-- This is done to keep the number of OnUpdate events down to a minimum for better performance.
+				if (not eventFrame:IsVisible()) then eventFrame:Show() end
+			end
 
-        return 
+		-- Cooldown is NOT enabled so add it to the delayed cooldowns list.
+		else
+			delayedCooldowns[cooldownType][cooldownID] = true
+		end
 
-    end
-
- 
-
-    -- Make sure the spell cooldown is enabled.
-
-    local _, duration, enabled = cooldownFunc(cooldownID)
-    if enabled == 1 then
-
-        -- XXX This is a hack to compensate for Blizzard's API reporting incorrect cooldown information for death knights.
-
-        -- XXX Ignore cooldowns that are the same duration as a rune cooldown except for the abilities that truly have the same cooldown.
-
-        if playerClass == "DEATHKNIGHT" and duration == RUNE_COOLDOWN and cooldownType == "player" and not runeCooldownAbilities[cooldownID] then 
-            duration = -1 
-
-        end
-		
-        -- Add the cooldown to the active cooldowns list if the cooldown is longer than the cooldown threshold or it's required to show.
-
-        local cooldownName = GetSpellInfo(cooldownID)
-        local ignoreCooldownThreshold = MSBTProfiles.currentProfile.ignoreCooldownThreshold
-
-        if duration >= MSBTProfiles.currentProfile.cooldownThreshold or ignoreCooldownThreshold[cooldownName] or ignoreCooldownThreshold[cooldownID] then
-            activeCooldowns[cooldownType][cooldownID] = duration
-
-            -- Force an update.
-
-            updateDelay = MIN_COOLDOWN_UPDATE_DELAY
-
-             -- Check if the event frame is not visible and make it visible so the OnUpdate events start firing.
-
-            -- This is done to keep the number of OnUpdate events down to a minimum for better performance.
-
-            if not eventFrame:IsVisible() then 
-                eventFrame:Show() 
-
-            end
-
-        end
-
-    else
-
-        -- Cooldown is NOT enabled so add it to the delayed cooldowns list.
-
-        delayedCooldowns[cooldownType][cooldownID] = true
-
-    end
-
-    lastCooldownIDs[cooldownType] = nil
-
-end -- if cooldownID
-
+		lastCooldownIDs[cooldownType] = nil
+	end -- cooldownID?
 end
 
 
@@ -288,7 +249,7 @@ local function OnUpdate(frame, elapsed)
 		local currentTime = GetTime()
 		for cooldownType, cooldowns in pairs(activeCooldowns) do
 			local cooldownFunc = (cooldownType == "item") and C_Container.GetItemCooldown or GetSpellCooldown
-			local infoFunc = (cooldownType == "item") and GetItemInfo or C_Spell.GetSpellInfo
+			local infoFunc = (cooldownType == "item") and GetItemInfo or GetSpellInfo
 			for cooldownID, remainingDuration in pairs(cooldowns) do
 				-- Ensure the cooldown is still valid.
 				local startTime, duration, enabled = cooldownFunc(cooldownID)
@@ -513,7 +474,7 @@ _, playerClass = UnitClass("player")
 hooksecurefunc("UseAction", UseActionHook)
 hooksecurefunc("UseInventoryItem", UseInventoryItemHook)
 hooksecurefunc(C_Container, "UseContainerItem", UseContainerItemHook)
-hooksecurefunc(C_Item, "UseItemByName", UseItemByNameHook)
+hooksecurefunc("UseItemByName", UseItemByNameHook)
 
 -- Specify the abilities that reset cooldowns.
 resetAbilities[SPELLID_COLD_SNAP] = true

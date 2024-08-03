@@ -19,14 +19,14 @@ local string_sub = string.sub
 local string_gsub = string.gsub
 local string_match = string.match
 local math_floor = math.floor
-local GetSpellInfo = C_Spell.GetSpellInfo
+local GetSpellInfo = GetSpellInfo
 
 
 -------------------------------------------------------------------------------
 -- Mod constants
 -------------------------------------------------------------------------------
 
-local TOC_VERSION = string_gsub(C_AddOns.GetAddOnMetadata("MikScrollingBattleText", "Version"), "wowi:revision", 0)
+local TOC_VERSION = string_gsub(GetAddOnMetadata("MikScrollingBattleText", "Version"), "wowi:revision", 0)
 mod.VERSION = tonumber(select(3, string_find(TOC_VERSION, "(%d+%.%d+)")))
 mod.VERSION_STRING = "v" .. TOC_VERSION
 mod.SVN_REVISION = tonumber(select(3, string_find(TOC_VERSION, "%d+%.%d+.(%d+)")))
@@ -132,7 +132,7 @@ end
 -- Returns a skill name for the passed id or unknown if the id invalid.
 -- ****************************************************************************
 local function GetSkillName(skillID)
-	local skillName = C_Spell.GetSpellInfo(skillID)
+	local skillName = GetSpellInfo(skillID)
 	if (not skillName) then
 		Print("Skill ID " .. tostring(skillID) .. " has been removed by Blizzard.")
 	end
