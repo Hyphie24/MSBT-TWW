@@ -1173,6 +1173,7 @@ local function ParserEventsHandler(parserEvent)
 		end
 	end
 
+
 	-- Event is not eligible to be merged so just display it now without processing the impossible fields.
 	if (not mergeEligible) then
 		local outputMessage = FormatEvent(eventSettings.message, parserEvent.amount, damageType, nil, nil, nil, affectedUnitName, affectedUnitClass, effectName)
@@ -1539,9 +1540,8 @@ ignoreAuras[SPELL_BLINK] = true
 ignoreAuras[SPELL_RAIN_OF_FIRE] = true
 
 -- Get localized off-hand trailer and convert to a lua search pattern.
-if (SPELL_BLOOD_STRIKE and SPELL_BLOOD_STRIKE ~= UNKNOWN) then
-	--offHandTrailer = string_gsub(SPELL_BLOOD_STRIKE_OFF_HAND, SPELL_BLOOD_STRIKE, "")
-	offHandPattern = string_gsub(SPELL_BLOOD_STRIKE, "([%^%(%)%.%[%]%*%+%-%?])", "%%%1")
+if (type(SPELL_BLOOD_STRIKE) == "string" and SPELL_BLOOD_STRIKE ~= UNKNOWN) then
+    offHandPattern = string.gsub(SPELL_BLOOD_STRIKE, "([%^%(%)%.%[%]%*%+%-%?])", "%%%1")
 end
 
 
