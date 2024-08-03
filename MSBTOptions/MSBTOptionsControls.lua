@@ -1776,12 +1776,15 @@ end
 -- ****************************************************************************
 -- Called when the color picker values change.
 -- ****************************************************************************
-local function Colorswatch_ColorPickerOnCancel(previousValues)
-	local colorswatch = ColorPickerFrame.associatedColorSwatch
-	if (not colorswatch) then return end
+local function Colorswatch_ColorPickerOnCancel()
 
+	local colorswatch = ColorPickerFrame.associatedColorSwatch
+	local previousValues = ColorPickerFrame.previousValues
+	if (not colorswatch) then return end
+	
 	Colorswatch_SetColor(colorswatch, previousValues.r, previousValues.g, previousValues.b)
 	if (colorswatch.colorChangedHandler) then colorswatch:colorChangedHandler() end
+
 end
 
 
@@ -1794,15 +1797,13 @@ local function Colorswatch_OnClick(this)
 	local tempB = this.b or 1
 
 	ColorPickerFrame.associatedColorSwatch = this
-	ColorPickerFrame.hasOpacity = false
-	ColorPickerFrame.opacity = 1
-	ColorPickerFrame.previousValues = {r = tempR, g = tempG, b = tempB}
-	ColorPickerFrame.func = Colorswatch_ColorPickerOnChange
-	ColorPickerFrame.cancelFunc = Colorswatch_ColorPickerOnCancel
-	ColorPickerFrame:SetColorRGB(tempR, tempG, tempB)
-	ColorPickerFrame:ClearAllPoints()
-	ColorPickerFrame:SetPoint("CENTER", this, "CENTER")
-	ColorPickerFrame:Show()
+	local info = {r = tempR, g = tempG, b = tempB}
+	info.hasOpacity = false
+	info.opacity = 1
+	info.previousValues = {r = tempR, g = tempG, b = tempB}
+	info.swatchFunc = Colorswatch_ColorPickerOnChange
+	info.cancelFunc = Colorswatch_ColorPickerOnCancel
+	ColorPickerFrame:SetupColorPickerAndShow(info)
 end
 
 
