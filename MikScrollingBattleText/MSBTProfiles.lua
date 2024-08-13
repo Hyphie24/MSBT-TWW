@@ -3123,7 +3123,7 @@ local function ShowOptions()
 	-- Load the options module if it's not already loaded.
 	local optionsName = "MSBTOptions"
 	if (not C_AddOns.IsAddOnLoaded(optionsName)) then
-		local loaded, failureReason = C_Addons.LoadAddOn(optionsName)
+		local loaded, failureReason = C_AddOns.LoadAddOn(optionsName)
 
 		-- Display an error message indicating why the module wasn't loaded if it
 		-- didn't load properly.
@@ -3134,7 +3134,7 @@ local function ShowOptions()
 	end
 
 	-- Display the main frame if the options module is loaded.
-	if (IsAddOnLoaded(optionsName)) then MSBTOptions.Main.ShowMainFrame() end
+	if (C_AddOns.IsAddOnLoaded(optionsName)) then MSBTOptions.Main.ShowMainFrame() end
 end
 
 
