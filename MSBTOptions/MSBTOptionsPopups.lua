@@ -4195,7 +4195,7 @@ end
 -- Initialization.
 -------------------------------------------------------------------------------
 
-FillLocalizedClassList(CLASS_NAMES);
+LocalizedClassList(CLASS_NAMES);
 
 
 
