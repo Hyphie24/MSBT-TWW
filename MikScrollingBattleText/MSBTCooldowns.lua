@@ -112,7 +112,7 @@ end
 -- ****************************************************************************
 local function OnSpellCast(unitID, spellID)
 	-- Ignore the cast if the spell name is excluded.
-	local spellName = GetSpellInfo(spellID) or UNKNOWN
+	local spellName = C_Spell.GetSpellInfo(spellID) or UNKNOWN
 	local cooldownExclusions = MSBTProfiles.currentProfile.cooldownExclusions
 	if (cooldownExclusions[spellName] or cooldownExclusions[spellID]) then return end
 
