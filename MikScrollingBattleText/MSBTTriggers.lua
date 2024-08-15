@@ -35,6 +35,7 @@ local ShortenNumber = MikSBT.ShortenNumber
 local REACTION_HOSTILE = MSBTParser.REACTION_HOSTILE
 local unitMap = MSBTParser.unitMap
 local classMap = MSBTParser.classMap
+local GetSpellCooldown = C_Spell.GetSpellCooldown
 
 
 
@@ -118,8 +119,8 @@ local function IsSkillUnavailable(skillName)
 	if (not GetSpellInfo(skillName)) then return true end
 
 	-- Pass check if the skillName is cooling down (but ignore the global cooldown).
-	local start, duration = GetSpellCooldown(skillName)
-	if (start > 0 and duration > 1.5) then return true end
+	local cooldownInfo = C_Spell.GetSpellCooldown(spellID);
+	if ((locDuration and locDuration > 0) or (cooldownInfo and cooldownInfo.duration > 1.5)) then return true end
 end
 
 
