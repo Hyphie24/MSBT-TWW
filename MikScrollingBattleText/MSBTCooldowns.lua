@@ -485,7 +485,7 @@ _, playerClass = UnitClass("player")
 
 -- Setup hooks.
 hooksecurefunc("UseAction", UseActionHook)
-hooksecurefunc( "UseInventoryItem", UseInventoryItemHook)
+hooksecurefunc("UseInventoryItem", UseInventoryItemHook)
 hooksecurefunc(C_Container, "UseContainerItem", UseContainerItemHook)
 hooksecurefunc(C_Container, "UseItemByName", UseItemByNameHook)
 
