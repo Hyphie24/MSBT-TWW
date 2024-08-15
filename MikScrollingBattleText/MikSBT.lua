@@ -72,6 +72,18 @@ local SEPARATOR_REPLACE_PATTERN = "%1"..(LARGE_NUMBER_SEPERATOR or ",").."%2"--]
 -- Utility functions.
 -------------------------------------------------------------------------------
 
+local function GetSpellInfo(SpellId)
+	local gsi_table = C_Spell.GetSpellInfo(SpellId)
+	if gsi_table == nil then
+
+		return nil
+
+	end
+
+	return gsi_table.name, gsi_table.rank, gsi_table.originalIconID, gsi_table.castTime, gsi_table.minRange, gsi_table.maxRange, gsi_table.spellID, gsi_table.originalIcon
+
+end
+
 -- ****************************************************************************
 -- Copies the passed table and all its subtables.
 -- ****************************************************************************

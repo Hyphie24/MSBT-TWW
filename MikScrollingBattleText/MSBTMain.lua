@@ -8,6 +8,17 @@ local module = {}
 local moduleName = "Main"
 MikSBT[moduleName] = module
 
+local function GetSpellInfo(SpellId)
+	local gsi_table = C_Spell.GetSpellInfo(SpellId)
+	if gsi_table == nil then
+
+		return nil
+
+	end
+
+	return gsi_table.name, gsi_table.rank, gsi_table.originalIconID, gsi_table.castTime, gsi_table.minRange, gsi_table.maxRange, gsi_table.spellID, gsi_table.originalIcon
+
+end
 
 -------------------------------------------------------------------------------
 -- Imports.

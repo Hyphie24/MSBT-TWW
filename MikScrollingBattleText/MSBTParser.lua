@@ -27,6 +27,18 @@ local UnitName = UnitName
 local Print = MikSBT.Print
 local EraseTable = MikSBT.EraseTable
 
+local function GetSpellInfo(SpellId)
+	local gsi_table = C_Spell.GetSpellInfo(SpellId)
+	if gsi_table == nil then
+
+		return nil
+
+	end
+
+	return gsi_table.name, gsi_table.rank, gsi_table.originalIconID, gsi_table.castTime, gsi_table.minRange, gsi_table.maxRange, gsi_table.spellID, gsi_table.originalIcon
+
+end
+
 local Obliterate = C_Spell.GetSpellInfo(49020)
 local FrostStrike = C_Spell.GetSpellInfo(49143)
 local Stormstrike = C_Spell.GetSpellInfo(17364)
