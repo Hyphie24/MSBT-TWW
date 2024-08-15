@@ -119,7 +119,7 @@ local function IsSkillUnavailable(skillName)
 	if (not GetSpellInfo(skillName)) then return true end
 
 	-- Pass check if the skillName is cooling down (but ignore the global cooldown).
-	local cooldownInfo = C_Spell.GetSpellCooldown(spellID);
+	local cooldownInfo = C_Spell.GetSpellCooldown(skillName)
 	if ((locDuration and locDuration > 0) or (cooldownInfo and cooldownInfo.duration > 1.5)) then return true end
 end
 
