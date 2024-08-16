@@ -487,7 +487,7 @@ _, playerClass = UnitClass("player")
 hooksecurefunc("UseAction", UseActionHook)
 hooksecurefunc("UseInventoryItem", UseInventoryItemHook)
 hooksecurefunc(C_Container, "UseContainerItem", UseContainerItemHook)
-hooksecurefunc(C_Container, "UseItemByName", UseItemByNameHook)
+hooksecurefunc(C_Item, "UseItemByName", UseItemByNameHook)
 
 -- Specify the abilities that reset cooldowns.
 resetAbilities[SPELLID_COLD_SNAP] = true
