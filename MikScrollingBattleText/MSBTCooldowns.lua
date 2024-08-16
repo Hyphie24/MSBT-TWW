@@ -22,14 +22,18 @@ local string_gsub = string.gsub
 local string_find = string.find
 local string_format = string.format
 local string_match = string.match
-local GetSpellCooldown = C_Spell.GetSpellCooldown
 local GetSpellInfo = C_Spell.GetSpellInfo
 local EraseTable = MikSBT.EraseTable
 local GetSkillName = MikSBT.GetSkillName
 local DisplayEvent = MikSBT.Animations.DisplayEvent
 local HandleCooldowns = MSBTTriggers.HandleCooldowns
 
-
+local GetSpellCooldown = C_Spell and C_Spell.GetSpellCooldown and function (spellID)
+    local spellCooldownInfo = C_Spell.GetSpellCooldown(spellID);
+    if spellCooldownInfo then
+        return spellCooldownInfo.startTime, spellCooldownInfo.duration, spellCooldownInfo.isEnabled, spellCooldownInfo.modRate;
+    end
+end or GetSpellCooldown;
 
 -------------------------------------------------------------------------------
 -- Constants.
