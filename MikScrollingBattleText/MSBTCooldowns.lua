@@ -22,6 +22,7 @@ local string_gsub = string.gsub
 local string_find = string.find
 local string_format = string.format
 local string_match = string.match
+local GetItemInfo = C_Item.GetItemInfo
 local GetSpellInfo = C_Spell.GetSpellInfo
 local EraseTable = MikSBT.EraseTable
 local GetSkillName = MikSBT.GetSkillName
