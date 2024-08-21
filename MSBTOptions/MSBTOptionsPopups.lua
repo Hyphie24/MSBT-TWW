@@ -1088,15 +1088,22 @@ end
 -- ****************************************************************************
 local function CreateDamageColors()
 	local frame = CreatePopup()
-	frame:SetWidth(260)
-	frame:SetHeight(260)
+	frame:SetSize(300, 300)
+
+	local scrollFrame = CreateFrame("ScrollFrame", nil, frame, "UIPanelScrollFrameTemplate")
+	scrollFrame:SetSize(200, 240) 
+	scrollFrame:SetPoint("TOP", 0, -40) 
+
+	local content = CreateFrame("Frame", nil, scrollFrame)
+	content:SetSize(10, 5) 
+	scrollFrame:SetScrollChild(content)
 
 	-- Close button.
 	local button = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
 	button:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -2, -2)
 
 	-- Color damage amounts.
-	local checkbox = MSBTControls.CreateCheckbox(frame)
+	local checkbox = MSBTControls.CreateCheckbox(scrollFrame)
 	local objLocale = L.CHECKBOXES["colorDamageAmounts"]
 	checkbox:Configure(24, objLocale.label, objLocale.tooltip)
 	checkbox:SetPoint("TOPLEFT", frame, "TOPLEFT", 20, -20)
@@ -1109,12 +1116,12 @@ local function CreateDamageColors()
 
 
 	-- Damage types.
-	local anchor = checkbox
+	local anchor = content
 	local globalStringSchoolIndex = 0
 	local colorswatch, fontString
 	for damageType, profileKey in pairs(MSBTMain.damageColorProfileEntries) do
-		colorswatch = MSBTControls.CreateColorswatch(frame)
-		colorswatch:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", anchor == checkbox and 20 or 0, anchor == checkbox and -10 or -5)
+		colorswatch = MSBTControls.CreateColorswatch(content)
+		colorswatch:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", anchor == content and 20 or 0, anchor == content and -10 or -5)
 		colorswatch:SetColorChangedHandler(
 			function (this)
 				MSBTProfiles.SetOption(profileKey, "colorR", this.r)
@@ -1122,7 +1129,7 @@ local function CreateDamageColors()
 				MSBTProfiles.SetOption(profileKey, "colorB", this.b)
 			end
 		)
-		checkbox = MSBTControls.CreateCheckbox(frame)
+		checkbox = MSBTControls.CreateCheckbox(content)
 		objLocale = L.CHECKBOXES["colorDamageEntry"]
 		checkbox:Configure(24, MSBTMain.damageTypeMap[damageType], objLocale.tooltip)
 		checkbox:SetPoint("LEFT", colorswatch, "RIGHT", 5, 0)
