@@ -23,19 +23,19 @@ local string_gsub = string.gsub
 local string_format = string.format
 local string_gmatch = string.gmatch
 local FormatLargeNumber = FormatLargeNumber
-local GetSpellInfo = C_Spell.GetSpellInfo
-local Print = MikSBT.Print
+
 local EraseTable = MikSBT.EraseTable
+local GetSpellCooldown = MikSBT.GetSpellCooldown
+local GetSpellInfo = MikSBT.GetSpellInfo
+local Print = MikSBT.Print
+local ShortenNumber = MikSBT.ShortenNumber
 local DisplayEvent = MikSBT.Animations.DisplayEvent
 local TestFlagsAny = MSBTParser.TestFlagsAny
-local ShortenNumber = MikSBT.ShortenNumber
---local SeparateNumber = MikSBT.SeparateNumber
 
 -- Local reference to various variables for faster access.
+local classMap = MSBTParser.classMap
 local REACTION_HOSTILE = MSBTParser.REACTION_HOSTILE
 local unitMap = MSBTParser.unitMap
-local classMap = MSBTParser.classMap
-local GetSpellCooldown = C_Spell.GetSpellCooldown
 
 
 
@@ -96,31 +96,25 @@ local powerTypes = {}
 -- Trigger utility functions.
 -------------------------------------------------------------------------------
 
-local function GetSpellInfo(SpellId)
-	local gsi_table = C_Spell.GetSpellInfo(SpellId)
-	if gsi_table == nil then
-
-		return nil
-
-	end
-
-	return gsi_table.name, gsi_table.rank, gsi_table.originalIconID, gsi_table.castTime, gsi_table.minRange, gsi_table.maxRange, gsi_table.spellID, gsi_table.originalIcon
-
-end
-
 -- ****************************************************************************
 -- Returns whether or not the passed spell name is unavailable.
 -- ****************************************************************************
 local function IsSkillUnavailable(skillName)
 	-- Pass if there is no skill to check.
-	if (not skillName or skillName == "") then return true end
+	if not skillName or skillName == "" then
+		return true
+	end
 
 	-- Pass if the skill isn't known.
-	if (not GetSpellInfo(skillName)) then return true end
+	if not GetSpellInfo(skillName) then
+		return true
+	end
 
 	-- Pass check if the skillName is cooling down (but ignore the global cooldown).
-	local cooldownInfo = C_Spell.GetSpellCooldown(skillName)
-	if ((locDuration and locDuration > 0) or (cooldownInfo and cooldownInfo.duration > 1.5)) then return true end
+	local start, duration = GetSpellCooldown(skillName)
+	if start > 0 and duration > 1.5 then
+		return true
+	end
 end
 
 
@@ -226,8 +220,8 @@ local function CreateConditionFuncs()
 	-- Exception conditions.
 	exceptionConditionFuncs = {
 		activeTalents = function (f, t, v) return f(GetActiveSpecGroup(), v) end,
-		buffActive = function (f, t, v) return UnitBuff("player", v) and true or false end,
-		buffInactive = function (f, t, v) return not UnitBuff("player", v) and true or false end,
+		buffActive = function (f, t, v) return C_UnitAuras.GetBuffDataByIndex("player", v) and true or false end,
+		buffInactive = function (f, t, v) return not C_UnitAuras.GetBuffDataByIndex("player", v) and true or false end,
 		currentCP = function (f, t, v) return f(GetComboPoints("player"), v) end,
 		currentPower = function (f, t, v) return f(UnitPower("player"), v) end,
 		inCombat = function (f, t, v) return f(UnitAffectingCombat("player") == true and true or false, v) end,
@@ -246,11 +240,19 @@ end
 -- corresponding type.
 -- ****************************************************************************
 local function ConvertType(value)
-	if (type(value) == "string") then
-		if (value == "true") then return true end
-		if (value == "false") then return false end
-		if (tonumber(value)) then return tonumber(value) end
-		if (value == "nil") then return nil end
+	if type(value) == "string" then
+		if value == "true" then
+			return true
+		end
+		if value == "false" then
+			return false
+		end
+		if tonumber(value) then
+			return tonumber(value)
+		end
+		if value == "nil" then
+			return nil
+		end
 	end
 
 	return value
@@ -265,205 +267,262 @@ end
 local function CategorizeTrigger(triggerSettings)
 	-- Don't register the trigger if it is disabled, not for the current class,
 	-- or there aren't any main events.
-	if (triggerSettings.disabled) then return end
-	if (triggerSettings.classes and not string_find(triggerSettings.classes, playerClass, nil, 1)) then return end
-	if (not triggerSettings.mainEvents) then return end
+	if triggerSettings.disabled then
+		return
+	end
+	if triggerSettings.classes and not string_find(triggerSettings.classes, playerClass, nil, 1) then
+		return
+	end
+	if not triggerSettings.mainEvents then
+		return
+	end
 
 	-- Loop through the main events for the trigger.
 	local eventConditions, conditions
 	for mainEvent, conditionsString in string_gmatch(triggerSettings.mainEvents .. "&&", "(.-)%{(.-)%}&&") do
 		-- Loop through the conditions for the event and populate the settings into a conditions table.
-		conditions = {triggerSettings = triggerSettings}
-		if (conditionsString and conditionsString ~= "") then
+		conditions = { triggerSettings = triggerSettings }
+		if conditionsString and conditionsString ~= "" then
 			for conditionEntry in string_gmatch(conditionsString .. ";;", "(.-);;") do
-				conditions[#conditions+1] = ConvertType(conditionEntry)
+				conditions[#conditions + 1] = ConvertType(conditionEntry)
 			end
 		end
 
 		-- Check for special consolidated miss events.
-		if (mainEvent == "GENERIC_MISSED") then
+		if mainEvent == "GENERIC_MISSED" then
 			listenEvents["COMBAT_LOG_EVENT_UNFILTERED"] = true
 
 			-- Create a table to hold an array of the triggers for the main events if there isn't already one for it.
-			if (not categorizedTriggers["SWING_MISSED"]) then categorizedTriggers["SWING_MISSED"] = {} end
-			if (not categorizedTriggers["RANGE_MISSED"]) then categorizedTriggers["RANGE_MISSED"] = {} end
-			if (not categorizedTriggers["SPELL_MISSED"]) then categorizedTriggers["SPELL_MISSED"] = {} end
+			if not categorizedTriggers["SWING_MISSED"] then
+				categorizedTriggers["SWING_MISSED"] = {}
+			end
+			if not categorizedTriggers["RANGE_MISSED"] then
+				categorizedTriggers["RANGE_MISSED"] = {}
+			end
+			if not categorizedTriggers["SPELL_MISSED"] then
+				categorizedTriggers["SPELL_MISSED"] = {}
+			end
 
 			-- Add the conditions table categorized by main events.
-			categorizedTriggers["SWING_MISSED"][#categorizedTriggers["SWING_MISSED"]+1] = conditions
-			categorizedTriggers["RANGE_MISSED"][#categorizedTriggers["RANGE_MISSED"]+1] = conditions
-			categorizedTriggers["SPELL_MISSED"][#categorizedTriggers["SPELL_MISSED"]+1] = conditions
+			categorizedTriggers["SWING_MISSED"][#categorizedTriggers["SWING_MISSED"] + 1] = conditions
+			categorizedTriggers["RANGE_MISSED"][#categorizedTriggers["RANGE_MISSED"] + 1] = conditions
+			categorizedTriggers["SPELL_MISSED"][#categorizedTriggers["SPELL_MISSED"] + 1] = conditions
 
 		-- Consolidated damage.
-		elseif (mainEvent == "GENERIC_DAMAGE") then
+		elseif mainEvent == "GENERIC_DAMAGE" then
 			listenEvents["COMBAT_LOG_EVENT_UNFILTERED"] = true
 
 			-- Create a table to hold an array of the triggers for the main events if there isn't already one for it.
-			if (not categorizedTriggers["SWING_DAMAGE"]) then categorizedTriggers["SWING_DAMAGE"] = {} end
-			if (not categorizedTriggers["RANGE_DAMAGE"]) then categorizedTriggers["RANGE_DAMAGE"] = {} end
-			if (not categorizedTriggers["SPELL_DAMAGE"]) then categorizedTriggers["SPELL_DAMAGE"] = {} end
+			if not categorizedTriggers["SWING_DAMAGE"] then
+				categorizedTriggers["SWING_DAMAGE"] = {}
+			end
+			if not categorizedTriggers["RANGE_DAMAGE"] then
+				categorizedTriggers["RANGE_DAMAGE"] = {}
+			end
+			if not categorizedTriggers["SPELL_DAMAGE"] then
+				categorizedTriggers["SPELL_DAMAGE"] = {}
+			end
 
 			-- Add the conditions table categorized by main events.
-			categorizedTriggers["SWING_DAMAGE"][#categorizedTriggers["SWING_DAMAGE"]+1] = conditions
-			categorizedTriggers["RANGE_DAMAGE"][#categorizedTriggers["RANGE_DAMAGE"]+1] = conditions
-			categorizedTriggers["SPELL_DAMAGE"][#categorizedTriggers["SPELL_DAMAGE"]+1] = conditions
+			categorizedTriggers["SWING_DAMAGE"][#categorizedTriggers["SWING_DAMAGE"] + 1] = conditions
+			categorizedTriggers["RANGE_DAMAGE"][#categorizedTriggers["RANGE_DAMAGE"] + 1] = conditions
+			categorizedTriggers["SPELL_DAMAGE"][#categorizedTriggers["SPELL_DAMAGE"] + 1] = conditions
 
 		-- Consolidated aura application.
-		elseif (mainEvent == "SPELL_AURA_APPLIED") then
+		elseif mainEvent == "SPELL_AURA_APPLIED" then
 			listenEvents["COMBAT_LOG_EVENT_UNFILTERED"] = true
 
 			-- Create a table to hold an array of the triggers for the main events if there isn't already one for it.
-			if (not categorizedTriggers["SPELL_AURA_APPLIED"]) then categorizedTriggers["SPELL_AURA_APPLIED"] = {} end
-			if (not categorizedTriggers["SPELL_AURA_APPLIED_DOSE"]) then categorizedTriggers["SPELL_AURA_APPLIED_DOSE"] = {} end
+			if not categorizedTriggers["SPELL_AURA_APPLIED"] then
+				categorizedTriggers["SPELL_AURA_APPLIED"] = {}
+			end
+			if not categorizedTriggers["SPELL_AURA_APPLIED_DOSE"]then
+				categorizedTriggers["SPELL_AURA_APPLIED_DOSE"] = {}
+			 end
 
 			-- Add the conditions table categorized by main events.
-			categorizedTriggers["SPELL_AURA_APPLIED"][#categorizedTriggers["SPELL_AURA_APPLIED"]+1] = conditions
-			categorizedTriggers["SPELL_AURA_APPLIED_DOSE"][#categorizedTriggers["SPELL_AURA_APPLIED_DOSE"]+1] = conditions
+			categorizedTriggers["SPELL_AURA_APPLIED"][#categorizedTriggers["SPELL_AURA_APPLIED"] + 1] = conditions
+			categorizedTriggers["SPELL_AURA_APPLIED_DOSE"][#categorizedTriggers["SPELL_AURA_APPLIED_DOSE"] + 1] = conditions
 
 			-- Add aura gains to the trigger suppression so the normal buff gain/fade events are ignored.
 			local skillName, recipientAffiliation
 			for x = 1, #conditions, 3 do
-				if (conditions[x] == "skillName" and conditions[x+1] == "eq" and conditions[x+2]) then skillName = conditions[x+2] end
-				if (conditions[x] == "recipientAffiliation" and conditions[x+1] == "eq" and conditions[x+2] == FLAG_YOU) then recipientAffiliation = FLAG_YOU end
-				if (conditions[x] == "skillID" and conditions[x+1] == "eq" and conditions[x+2]) then skillName = GetSpellInfo(conditions[x+2]) or UNKNOWN end
+				if conditions[x] == "skillName" and conditions[x + 1] == "eq" and conditions[x + 2] then
+					skillName = conditions[x + 2]
+				end
+				if conditions[x] == "recipientAffiliation" and conditions[x + 1] == "eq" and conditions[x + 2] == FLAG_YOU then
+					recipientAffiliation = FLAG_YOU
+				end
+				if conditions[x] == "skillID" and conditions[x + 1] == "eq" and conditions[x + 2] then
+					skillName = GetSpellInfo(conditions[x + 2]) or UNKNOWN
+				end
 			end
 
-				if (skillName and recipientAffiliation) then triggerSuppressions[skillName] = true end
+				if skillName and recipientAffiliation then
+					triggerSuppressions[skillName] = true
+				end
 
 		-- Consolidated aura removal.
-		elseif (mainEvent == "SPELL_AURA_REMOVED") then
+		elseif mainEvent == "SPELL_AURA_REMOVED" then
 			listenEvents["COMBAT_LOG_EVENT_UNFILTERED"] = true
 
 			-- Create a table to hold an array of the triggers for the main events if there isn't already one for it.
-			if (not categorizedTriggers["SPELL_AURA_REMOVED"]) then categorizedTriggers["SPELL_AURA_REMOVED"] = {} end
-			if (not categorizedTriggers["SPELL_AURA_REMOVED_DOSE"]) then categorizedTriggers["SPELL_AURA_REMOVED_DOSE"] = {} end
+			if not categorizedTriggers["SPELL_AURA_REMOVED"] then
+				categorizedTriggers["SPELL_AURA_REMOVED"] = {}
+			end
+			if not categorizedTriggers["SPELL_AURA_REMOVED_DOSE"] then
+				categorizedTriggers["SPELL_AURA_REMOVED_DOSE"] = {}
+			end
 
 			-- Add the conditions table categorized by main events.
-			categorizedTriggers["SPELL_AURA_REMOVED"][#categorizedTriggers["SPELL_AURA_REMOVED"]+1] = conditions
-			categorizedTriggers["SPELL_AURA_REMOVED_DOSE"][#categorizedTriggers["SPELL_AURA_REMOVED_DOSE"]+1] = conditions
+			categorizedTriggers["SPELL_AURA_REMOVED"][#categorizedTriggers["SPELL_AURA_REMOVED"] + 1] = conditions
+			categorizedTriggers["SPELL_AURA_REMOVED_DOSE"][#categorizedTriggers["SPELL_AURA_REMOVED_DOSE"] + 1] = conditions
 
 		-- Other events.
 		else
 			-- Create a table to hold an array of the triggers for the main event if there isn't already one for it.
-			if (not categorizedTriggers[mainEvent]) then categorizedTriggers[mainEvent] = {} end
+			if not categorizedTriggers[mainEvent] then
+				categorizedTriggers[mainEvent] = {}
+			end
 			eventConditions = categorizedTriggers[mainEvent]
 
 			-- Health events.
-			if (mainEvent == "UNIT_HEALTH") then
+			if mainEvent == "UNIT_HEALTH" then
 				listenEvents[mainEvent] = true
 				lastPercentages[mainEvent] = {}
 
 				-- Categorize the change by used units for better performance. The unitID condition is required for
 				-- health triggers.
 				for x = 1, #conditions, 3 do
-					if (conditions[x] == "unitID") then
+					if conditions[x] == "unitID" then
 						-- Expand the consolidated party unit id to individual ones.
-						local conditionValue = conditions[x+2]
-						if (conditionValue == "party") then
+						local conditionValue = conditions[x + 2]
+						if conditionValue == "party" then
 							for partyMember = 1, MAX_PARTY_MEMBERS do
 								local unitID = "party" .. partyMember
-								if (not eventConditions[unitID]) then eventConditions[unitID] = {} end
-								eventConditions[unitID][#eventConditions[unitID]+1] = conditions
+								if not eventConditions[unitID] then
+									eventConditions[unitID] = {}
+								end
+								eventConditions[unitID][#eventConditions[unitID] + 1] = conditions
 							end
 
-						elseif (conditionValue == "raid") then
+						elseif conditionValue == "raid" then
 							for raidMember = 1, MAX_RAID_MEMBERS do
 								local unitID = "raid" .. raidMember
-								if (not eventConditions[unitID]) then eventConditions[unitID] = {} end
-								eventConditions[unitID][#eventConditions[unitID]+1] = conditions
+								if not eventConditions[unitID] then
+									eventConditions[unitID] = {}
+								end
+								eventConditions[unitID][#eventConditions[unitID] + 1] = conditions
 							end
 
 						-- Specific unit.
 						else
-							if (not eventConditions[conditionValue]) then eventConditions[conditionValue] = {} end
-							eventConditions[conditionValue][#eventConditions[conditionValue]+1] = conditions
+							if not eventConditions[conditionValue] then
+								eventConditions[conditionValue] = {}
+							end
+							eventConditions[conditionValue][#eventConditions[conditionValue] + 1] = conditions
 						end
 					end -- unitID?
 				end -- Loop through conditions.
 
 			-- Power events.
-			elseif (mainEvent == "UNIT_POWER_UPDATE") then
+			elseif mainEvent == "UNIT_POWER_UPDATE" then
 				listenEvents[mainEvent] = true
 
 				-- Detect power type. The powerType and unitID conditions are required for power triggers.
 				local powerType
 				for x = 1, #conditions, 3 do
-					if (conditions[x] == "powerType") then powerType = conditions[x+2] break end
+					if conditions[x] == "powerType" then
+						powerType = conditions[x + 2]
+						break
+					end
 				end
 
 				-- Ensure the power type is defined.
-				if (powerType) then
+				if powerType then
 					lastPercentages[powerType] = {}
 
 					-- Categorize the change by used power types and units for better performance.
 					-- The powerType and unitID conditions are required for power triggers.
 					for x = 1, #conditions, 3 do
-						if (conditions[x] == "unitID") then
-							if (not eventConditions[powerType]) then eventConditions[powerType] = {} end
+						if conditions[x] == "unitID" then
+							if not eventConditions[powerType] then
+								eventConditions[powerType] = {}
+							end
 							local powerConditions = eventConditions[powerType]
 
 							-- Expand the consolidated party unit id to individual ones.
-							local conditionValue = conditions[x+2]
-							if (conditionValue == "party") then
+							local conditionValue = conditions[x + 2]
+							if conditionValue == "party" then
 								for partyMember = 1, MAX_PARTY_MEMBERS do
 									local unitID = "party" .. partyMember
-									if (not powerConditions[unitID]) then powerConditions[unitID] = {} end
-									powerConditions[unitID][#powerConditions[unitID]+1] = conditions
+									if not powerConditions[unitID] then
+										powerConditions[unitID] = {}
+									end
+									powerConditions[unitID][#powerConditions[unitID] + 1] = conditions
 								end
 
-							elseif (conditionValue == "raid") then
+							elseif conditionValue == "raid" then
 								for raidMember = 1, MAX_RAID_MEMBERS do
 									local unitID = "raid" .. raidMember
-									if (not powerConditions[unitID]) then powerConditions[unitID] = {} end
-									powerConditions[unitID][#powerConditions[unitID]+1] = conditions
+									if not powerConditions[unitID] then
+										powerConditions[unitID] = {}
+									end
+									powerConditions[unitID][#powerConditions[unitID] + 1] = conditions
 								end
 
 							-- Specific unit.
 							else
 
-								if (not powerConditions[conditionValue]) then powerConditions[conditionValue] = {} end
-								powerConditions[conditionValue][#powerConditions[conditionValue]+1] = conditions
+								if not powerConditions[conditionValue] then
+									powerConditions[conditionValue] = {}
+								end
+								powerConditions[conditionValue][#powerConditions[conditionValue] + 1] = conditions
 							end
 						end -- unitID?
 					end -- Loop through conditions.
 				end -- Power type?
 
 			-- Skill cooldown events.
-			elseif (mainEvent == "SKILL_COOLDOWN") then
-				eventConditions[#eventConditions+1] = conditions
+			elseif mainEvent == "SKILL_COOLDOWN" then
+				eventConditions[#eventConditions + 1] = conditions
 				MikSBT.Cooldowns.UpdateRegisteredEvents()
 
 			-- Pet cooldown events.
-			elseif (mainEvent == "PET_COOLDOWN") then
-				eventConditions[#eventConditions+1] = conditions
+			elseif mainEvent == "PET_COOLDOWN" then
+				eventConditions[#eventConditions + 1] = conditions
 				MikSBT.Cooldowns.UpdateRegisteredEvents()
 
 			-- Item cooldown events.
-			elseif (mainEvent == "ITEM_COOLDOWN") then
-				eventConditions[#eventConditions+1] = conditions
+			elseif mainEvent == "ITEM_COOLDOWN" then
+				eventConditions[#eventConditions + 1] = conditions
 				MikSBT.Cooldowns.UpdateRegisteredEvents()
 
 			-- Combat log event.
-			elseif (captureFuncs[mainEvent]) then
+			elseif captureFuncs[mainEvent] then
 				listenEvents["COMBAT_LOG_EVENT_UNFILTERED"] = true
-				eventConditions[#eventConditions+1] = conditions
+				eventConditions[#eventConditions + 1] = conditions
 			end
 		end -- Specific events check.
 	end -- Loop through conditions.
 
 
 	-- Leave the function if there are no exceptions for the trigger.
-	if (not triggerSettings.exceptions or triggerSettings.exceptions == "") then return end
+	if not triggerSettings.exceptions or triggerSettings.exceptions == "" then
+		return
+	end
 
 	-- Loop through the conditions for the exceptions for the trigger.
 	local exceptionConditions = {}
 	for exceptionValue in string_gmatch(triggerSettings.exceptions .. ";;", "(.-);;") do
-		exceptionConditions[#exceptionConditions+1] = ConvertType(exceptionValue)
+		exceptionConditions[#exceptionConditions + 1] = ConvertType(exceptionValue)
 	end
 
 	-- Create an entry to track fired times for the trigger.
 	for x = 1, #exceptionConditions, 3 do
-		if (exceptionConditions[x] == "recentlyFired") then firedTimes[triggerSettings] = 0 end
+		if exceptionConditions[x] == "recentlyFired" then
+			firedTimes[triggerSettings] = 0
+		end
 	end
 
 	-- Set the exceptions for the trigger.
@@ -494,15 +553,17 @@ local function UpdateTriggers()
 
 	-- Categorize triggers from the current profile.
 	local currentProfileTriggers = rawget(MSBTProfiles.currentProfile, "triggers")
-	if (currentProfileTriggers) then
+	if currentProfileTriggers then
 		for triggerKey, triggerSettings in pairs(currentProfileTriggers) do
-			if (triggerSettings) then CategorizeTrigger(triggerSettings) end
+			if triggerSettings then
+				CategorizeTrigger(triggerSettings)
+			end
 		end
 	end
 
 	-- Categorize triggers available in the master profile that aren't in the current profile.
 	for triggerKey, triggerSettings in pairs(MSBTProfiles.masterProfile.triggers) do
-		if (not currentProfileTriggers or rawget(currentProfileTriggers, triggerKey) == nil) then
+		if not currentProfileTriggers or rawget(currentProfileTriggers, triggerKey) == nil then
 			CategorizeTrigger(triggerSettings)
 		end
 	end
@@ -526,14 +587,18 @@ local function DisplayTrigger(triggerSettings, sourceName, sourceClass, recipien
 	local iconSkill = triggerSettings.iconSkill
 
 	-- Substitute source name.
-	if (sourceName and string_find(message, "%n", 1, true)) then
+	if sourceName and string_find(message, "%n", 1, true) then
 		-- Strip realm from names.
-		if (string_find(sourceName, "-", 1, true)) then sourceName = string_gsub(sourceName, "(.-)%-.*", "%1") end
+		if string_find(sourceName, "-", 1, true) then
+			sourceName = string_gsub(sourceName, "(.-)%-.*", "%1")
+		end
 
 		-- Color the name according to the class if there is one and it's enabled.
-		if (sourceClass and not currentProfile.classColoringDisabled) then
+		if sourceClass and not currentProfile.classColoringDisabled then
 			local classSettings = currentProfile[sourceClass]
-			if (classSettings and not classSettings.disabled) then sourceName = string_format("|cFF%02x%02x%02x%s|r", classSettings.colorR * 255, classSettings.colorG * 255, classSettings.colorB * 255, sourceName) end
+			if classSettings and not classSettings.disabled then
+				sourceName = string_format("|cFF%02x%02x%02x%s|r", classSettings.colorR * 255, classSettings.colorG * 255, classSettings.colorB * 255, sourceName)
+			end
 		end
 
 		-- Substitute all %n event codes with the source name.
@@ -541,14 +606,18 @@ local function DisplayTrigger(triggerSettings, sourceName, sourceClass, recipien
 	end
 
 	-- Substitute recipient name.
-	if (recipientName and string_find(message, "%r", 1, true)) then
+	if recipientName and string_find(message, "%r", 1, true) then
 		-- Strip realm from names.
-		if (string_find(recipientName, "-", 1, true)) then recipientName = string_gsub(recipientName, "(.-)%-.*", "%1") end
+		if string_find(recipientName, "-", 1, true) then
+			recipientName = string_gsub(recipientName, "(.-)%-.*", "%1")
+		end
 
 		-- Color the name according to the class if there is one and it's enabled.
-		if (recipientClass and not currentProfile.classColoringDisabled) then
+		if recipientClass and not currentProfile.classColoringDisabled then
 			local classSettings = currentProfile[recipientClass]
-			if (classSettings and not classSettings.disabled) then recipientName = string_format("|cFF%02x%02x%02x%s|r", classSettings.colorR * 255, classSettings.colorG * 255, classSettings.colorB * 255, recipientName) end
+			if classSettings and not classSettings.disabled then
+				recipientName = string_format("|cFF%02x%02x%02x%s|r", classSettings.colorR * 255, classSettings.colorG * 255, classSettings.colorB * 255, recipientName)
+			end
 		end
 
 		-- Substitute all %r event codes with the recipient name.
@@ -556,27 +625,35 @@ local function DisplayTrigger(triggerSettings, sourceName, sourceClass, recipien
 	end
 
 	-- Substitute skill name.
-	if (skillName and string_find(message, "%s", 1, true)) then message = string_gsub(message, "%%s", skillName) end
+	if skillName and string_find(message, "%s", 1, true) then
+		message = string_gsub(message, "%%s", skillName)
+	end
 
 	-- Substitute extra skill name.
-	if (extraSkillName and string_find(message, "%e", 1, true)) then message = string_gsub(message, "%%e", extraSkillName) end
+	if extraSkillName and string_find(message, "%e", 1, true) then
+		message = string_gsub(message, "%%e", extraSkillName)
+	end
 
 	-- Substitute amount.
-	if (amount and string_find(message, "%a", 1, true)) then
+	if amount and string_find(message, "%a", 1, true) then
 		-- Shorten amount with SI suffixes or separate into digit groups depending on options.
 		local formattedAmount = amount
-		if (currentProfile.shortenNumbers) then
+		if currentProfile.shortenNumbers then
 			formattedAmount = ShortenNumber(formattedAmount, currentProfile.shortenNumberPrecision)
-		elseif (currentProfile.groupNumbers) then
+		elseif currentProfile.groupNumbers then
 			formattedAmount = FormatLargeNumber(formattedAmount)
 		end
 		message = string_gsub(message, "%%a", formattedAmount)
 	end
 
 	-- Override the texture if there is an icon skill for the trigger.
-	if (iconSkill) then
-		if (skillName and string_find(iconSkill, "%s", 1, true)) then iconSkill = string_gsub(iconSkill, "%%s", skillName) end
-		if (extraSkillName and string_find(iconSkill, "%e", 1, true)) then iconSkill = string_gsub(iconSkill, "%%e", extraSkillName) end
+	if iconSkill then
+		if skillName and string_find(iconSkill, "%s", 1, true) then
+			iconSkill = string_gsub(iconSkill, "%%s", skillName)
+		end
+		if extraSkillName and string_find(iconSkill, "%e", 1, true) then
+			iconSkill = string_gsub(iconSkill, "%%e", extraSkillName)
+		end
 		_, _, effectTexture = GetSpellInfo(iconSkill)
 	end
 
@@ -594,20 +671,26 @@ end
 -- ****************************************************************************
 local function TestExceptions(triggerSettings)
 	-- Trigger is not excluded if there are no exceptions.
-	if (not triggerExceptions[triggerSettings]) then return end
+	if not triggerExceptions[triggerSettings] then
+		return
+	end
 
 	-- Loop through each exception triplet.
 	local exceptionConditions = triggerExceptions[triggerSettings]
 	for position = 1, #exceptionConditions, 3 do
 		-- Test the exception and if it passes, don't waste time checking others.
 		local conditionFunc = exceptionConditionFuncs[exceptionConditions[position]]
-		local testFunc = testFuncs[exceptionConditions[position+1]]
-		if (conditionFunc and testFunc and conditionFunc(testFunc, triggerSettings, exceptionConditions[position+2])) then return true end
+		local testFunc = testFuncs[exceptionConditions[position + 1]]
+		if conditionFunc and testFunc and conditionFunc(testFunc, triggerSettings, exceptionConditions[position + 2]) then
+			return true
+		end
 	end -- Exceptions loop.
 
 	-- Set the current time as the last time the trigger was fired if the the trigger
 	-- has a recently fired exception.
-	if (firedTimes[triggerSettings]) then firedTimes[triggerSettings] = GetTime() end
+	if firedTimes[triggerSettings] then
+		firedTimes[triggerSettings] = GetTime()
+	end
 end
 
 
@@ -617,8 +700,12 @@ end
 local function HandleHealthAndPowerTriggers(unit, event, currentAmount, maxAmount, powerType)
 	-- Ignore the event if there are no triggers to search for it.
 	local eventTriggers = categorizedTriggers[event]
-	if (powerType and eventTriggers) then eventTriggers = eventTriggers[powerType] end
-	if (not eventTriggers or not eventTriggers[unit]) then return end
+	if powerType and eventTriggers then
+		eventTriggers = eventTriggers[powerType]
+	end
+	if not eventTriggers or not eventTriggers[unit] then
+		return
+	end
 
 	-- Calculate current last percentages.
 	local currentPercentage = currentAmount / maxAmount
@@ -626,8 +713,14 @@ local function HandleHealthAndPowerTriggers(unit, event, currentAmount, maxAmoun
 	local lastPercentage = lastEventPercentages[unit]
 
 	-- Ignore thresholds on death.
-	if (not lastPercentage) then lastEventPercentages[unit] = currentPercentage return end
-	if (UnitIsDeadOrGhost(unit)) then lastEventPercentages[unit] = nil return end
+	if not lastPercentage then
+		lastEventPercentages[unit] = currentPercentage
+		return
+	end
+	if UnitIsDeadOrGhost(unit) then
+		lastEventPercentages[unit] = nil
+		return
+	end
 
 	-- Populate the lookup table for conditions checking.
 	lookupTable.amount = currentAmount
@@ -638,7 +731,9 @@ local function HandleHealthAndPowerTriggers(unit, event, currentAmount, maxAmoun
 
 
 	-- Erase the list of triggers to fire.
-	for k in pairs(triggersToFire) do triggersToFire[k] = nil end
+	for k in pairs(triggersToFire) do
+		triggersToFire[k] = nil
+	end
 
 	-- Loop through the conditions list for the main event.
 	for _, eventConditions in ipairs(eventTriggers[unit]) do
@@ -646,28 +741,35 @@ local function HandleHealthAndPowerTriggers(unit, event, currentAmount, maxAmoun
 		local doFire = true
 
 		-- Don't bother checking conditions for a trigger that has already been fired.
-		if (not triggersToFire[eventConditions.triggerSettings]) then
+		if not triggersToFire[eventConditions.triggerSettings] then
 			-- Loop through each condition triplet.
 			for position = 1, #eventConditions, 3 do
 				-- Test the condition and if it fails, don't waste time checking other conditions.
 				local conditionFunc = eventConditionFuncs[eventConditions[position]]
-				local testFunc = testFuncs[eventConditions[position+1]]
-				if (conditionFunc and testFunc and not conditionFunc(testFunc, lookupTable, eventConditions[position+2])) then doFire = false break end
+				local testFunc = testFuncs[eventConditions[position + 1]]
+				if conditionFunc and testFunc and not conditionFunc(testFunc, lookupTable, eventConditions[position + 2]) then
+					doFire = false
+					break
+				end
 			end -- Conditions loop.
 
 			-- Set the trigger to be fired if none of the conditions failed.
-			if (doFire) then triggersToFire[eventConditions.triggerSettings] = true end
+			if doFire then
+				triggersToFire[eventConditions.triggerSettings] = true
+			end
 		end
 	end
 
 	-- Get the texture for the event and display triggers that aren't excepted.
-	if (next(triggersToFire)) then
+	if next(triggersToFire) then
 		-- Display the fired triggers if none of the exceptions are true.
 		local recipientName = UnitName(unit)
 		local _, recipientClass = UnitClass(unit)
 		local amount = currentAmount
 		for triggerSettings in pairs(triggersToFire) do
-			if (not TestExceptions(triggerSettings)) then DisplayTrigger(triggerSettings, nil, nil, recipientName, recipientClass, nil, nil, amount) end
+			if not TestExceptions(triggerSettings) then
+				DisplayTrigger(triggerSettings, nil, nil, recipientName, recipientClass, nil, nil, amount)
+			end
 		end
 	end -- Triggers to fire?
 
@@ -682,18 +784,20 @@ end
 local function HandleCooldowns(cooldownType, cooldownID, cooldownName, effectTexture)
 	-- Choose the correct cooldown event based on the cooldown type.
 	local event = "SKILL_COOLDOWN"
-	if (cooldownType == "pet") then
+	if cooldownType == "pet" then
 		event = "PET_COOLDOWN"
-	elseif (cooldownType == "item") then
+	elseif cooldownType == "item" then
 		event = "ITEM_COOLDOWN"
 	end
 
 	-- Ignore the event if there are no triggers to search for it.
 	local eventTriggers = categorizedTriggers[event]
-	if (not eventTriggers) then return end
+	if not eventTriggers then
+		return
+	end
 
 	-- Populate the lookup table for conditions checking.
-	if (cooldownType == "item") then
+	if cooldownType == "item" then
 		lookupTable.itemID = cooldownID
 		lookupTable.itemName = cooldownName
 	else
@@ -702,7 +806,9 @@ local function HandleCooldowns(cooldownType, cooldownID, cooldownName, effectTex
 	end
 
 	-- Erase the list of triggers to fire.
-	for k in pairs(triggersToFire) do triggersToFire[k] = nil end
+	for k in pairs(triggersToFire) do
+		triggersToFire[k] = nil
+	end
 
 	-- Loop through the conditions list for the main event.
 	for _, eventConditions in ipairs(eventTriggers) do
@@ -710,26 +816,33 @@ local function HandleCooldowns(cooldownType, cooldownID, cooldownName, effectTex
 		local doFire = true
 
 		-- Don't bother checking conditions for a trigger that has already been fired.
-		if (not triggersToFire[eventConditions.triggerSettings]) then
+		if not triggersToFire[eventConditions.triggerSettings] then
 			-- Loop through each condition triplet.
 			for position = 1, #eventConditions, 3 do
 				-- Test the condition and if it fails, don't waste time checking other conditions.
 				local conditionFunc = eventConditionFuncs[eventConditions[position]]
-				local testFunc = testFuncs[eventConditions[position+1]]
-				if (conditionFunc and testFunc and not conditionFunc(testFunc, lookupTable, eventConditions[position+2])) then doFire = false break end
+				local testFunc = testFuncs[eventConditions[position + 1]]
+				if conditionFunc and testFunc and not conditionFunc(testFunc, lookupTable, eventConditions[position + 2]) then
+					doFire = false
+					break
+				end
 			end -- Conditions loop.
 
 			-- Set the trigger to be fired if none of the conditions failed.
-			if (doFire) then triggersToFire[eventConditions.triggerSettings] = true end
+			if doFire then
+				triggersToFire[eventConditions.triggerSettings] = true
+			end
 		end
 	end
 
 	-- Get the texture for the event and display triggers that aren't excepted.
-	if (next(triggersToFire)) then
+	if next(triggersToFire) then
 		-- Display the fired triggers if none of the exceptions are true.
 		local recipientName = playerName
 		for triggerSettings in pairs(triggersToFire) do
-			if (not TestExceptions(triggerSettings)) then DisplayTrigger(triggerSettings, nil, nil, recipientName, playerClass, cooldownName, nil, nil, effectTexture) end
+			if not TestExceptions(triggerSettings) then
+				DisplayTrigger(triggerSettings, nil, nil, recipientName, playerClass, cooldownName, nil, nil, effectTexture)
+			end
 		end
 	end -- Triggers to fire?
 end
@@ -740,15 +853,21 @@ end
 -- ****************************************************************************
 local function HandleCombatLogTriggers(timestamp, event, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, recipientGUID, recipientName, recipientFlags, recipientRaidFlags, ...)
 	-- Ignore the event if there are no triggers to search for it.
-	if (not categorizedTriggers[event]) then return end
+	if not categorizedTriggers[event] then
+		return
+	end
 
 	-- Make sure the capture function for the event exists.
 	local captureFunc = captureFuncs[event]
-	if (not captureFunc) then return end
+	if not captureFunc then
+		return
+	end
 
 
 	-- Erase the parser event table.
-	for k in pairs(parserEvent) do parserEvent[k] = nil end
+	for k in pairs(parserEvent) do
+		parserEvent[k] = nil
+	end
 
 	-- Populate fields that exist for all events.
 	parserEvent.sourceGUID = sourceGUID
@@ -774,24 +893,31 @@ local function HandleCombatLogTriggers(timestamp, event, hideCaster, sourceGUID,
 		local doFire = true
 
 		-- Don't bother checking conditions for a trigger that has already been fired.
-		if (not triggersToFire[eventConditions.triggerSettings]) then
+		if not triggersToFire[eventConditions.triggerSettings] then
 			-- Loop through each condition triplet.
 			for position = 1, #eventConditions, 3 do
 				-- Test the condition and if it fails, don't waste time checking other conditions.
 				local conditionFunc = eventConditionFuncs[eventConditions[position]]
-				local testFunc = testFuncs[eventConditions[position+1]]
-				if (conditionFunc and testFunc and not conditionFunc(testFunc, parserEvent, eventConditions[position+2])) then doFire = false break end
+				local testFunc = testFuncs[eventConditions[position + 1]]
+				if conditionFunc and testFunc and not conditionFunc(testFunc, parserEvent, eventConditions[position + 2]) then
+					doFire = false
+					break
+				end
 			end -- Conditions loop.
 
 			-- Set the trigger to be fired if none of the conditions failed.
-			if (doFire) then triggersToFire[eventConditions.triggerSettings] = true end
+			if doFire then
+				triggersToFire[eventConditions.triggerSettings] = true
+			end
 		end
 	end
 
 	-- Get the texture for the event and display triggers that aren't excepted.
-	if (next(triggersToFire)) then
+	if next(triggersToFire) then
 		local effectTexture
-		if (parserEvent.skillID or parserEvent.extraSkillID) then _, _, effectTexture = GetSpellInfo(parserEvent.extraSkillID or parserEvent.skillID) end
+		if parserEvent.skillID or parserEvent.extraSkillID then
+			_, _, effectTexture = GetSpellInfo(parserEvent.extraSkillID or parserEvent.skillID)
+		end
 
 		-- Display the fired triggers if none of the exceptions are true.
 		local sourceName = parserEvent.sourceName
@@ -802,7 +928,9 @@ local function HandleCombatLogTriggers(timestamp, event, hideCaster, sourceGUID,
 		local extraSkillName = parserEvent.extraSkillName
 		local amount = parserEvent.amount
 		for triggerSettings in pairs(triggersToFire) do
-			if (not TestExceptions(triggerSettings)) then DisplayTrigger(triggerSettings, sourceName, sourceClass, recipientName, recipientClass, skillName, extraSkillName, amount, effectTexture) end
+			if not TestExceptions(triggerSettings) then
+				DisplayTrigger(triggerSettings, sourceName, sourceClass, recipientName, recipientClass, skillName, extraSkillName, amount, effectTexture)
+			end
 		end
 	end -- Triggers to fire?
 end
@@ -817,24 +945,31 @@ end
 -- ****************************************************************************
 local function OnEvent(this, event, arg1, arg2, ...)
 	-- Health.
-	if (event == "UNIT_HEALTH") then
+	if event == "UNIT_HEALTH" then
 		-- Ignore the event if there are no triggers to search for it.
-		if (not categorizedTriggers[event] or not categorizedTriggers[event][arg1]) then return end
+		if not categorizedTriggers[event] or not categorizedTriggers[event][arg1] then
+			return
+		end
 		HandleHealthAndPowerTriggers(arg1, event, UnitHealth(arg1), UnitHealthMax(arg1))
 
 	-- Power.
-	elseif (event == "UNIT_POWER_UPDATE") then
+	elseif event == "UNIT_POWER_UPDATE" then
 		-- Ignore the event if there are no triggers to search for it.
-		if (not categorizedTriggers[event]) then return end
+		if not categorizedTriggers[event] then
+			return
+		end
 		local powerType = powerTypes[arg2]
-		if (not powerType) then return end
-		if (not categorizedTriggers[event][powerType] or not categorizedTriggers[event][powerType][arg1]) then return end
+		if not powerType then
+			return
+		end
+		if not categorizedTriggers[event][powerType] or not categorizedTriggers[event][powerType][arg1] then
+			return
+		end
 		HandleHealthAndPowerTriggers(arg1, event, UnitPower(arg1, powerType), UnitPowerMax(arg1, powerType), powerType)
 
 	-- Combat log event.
-	elseif (event == "COMBAT_LOG_EVENT_UNFILTERED") then
+	elseif event == "COMBAT_LOG_EVENT_UNFILTERED" then
 		HandleCombatLogTriggers(CombatLogGetCurrentEventInfo())
-
 	end -- Event types.
 end
 

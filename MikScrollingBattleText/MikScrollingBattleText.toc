@@ -1,5 +1,5 @@
-## Interface: 110002
-## Version: 5.9.1
+## Interface: 11504, 40400, 110002
+## Version: 6.0.3
 ## Title: Mik's Scrolling Battle Text
 ## Author: Mikord
 ## Notes: Scrolls battle information around the character model.

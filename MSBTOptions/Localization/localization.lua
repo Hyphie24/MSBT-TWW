@@ -48,7 +48,7 @@ L.MSG_INVALID_CUSTOM_FONT_NAME		= "Invalid font name."
 L.MSG_FONT_NAME_ALREADY_EXISTS		= "Font name already exists."
 L.MSG_INVALID_CUSTOM_FONT_PATH		= "Font path must point to a .ttf file."
 L.MSG_UNABLE_TO_SET_FONT			= "Unable to set specified font."
-L.MSG_TESTING_FONT			= "Testing the specified font for validity..."
+L.MSG_TESTING_FONT					= "Testing the specified font for validity..."
 L.MSG_CUSTOM_SOUNDS					= "Custom Sounds"
 L.MSG_INVALID_CUSTOM_SOUND_NAME		= "Invalid sound name."
 L.MSG_SOUND_NAME_ALREADY_EXISTS		= "Sound name already exists."
@@ -506,7 +506,7 @@ obj["NOTIFICATION_CP_GAIN"]				= { label="Combo Point Gains", tooltip="Enable wh
 obj["NOTIFICATION_CP_FULL"]				= { label="Combo Points Full", tooltip="Enable when you attain full combo points."}
 obj["NOTIFICATION_HOLY_POWER_CHANGE"]	= { label="Holy Power Changes", tooltip="Enable when you change holy power."}
 obj["NOTIFICATION_HOLY_POWER_FULL"]		= { label="Holy Power Full", tooltip="Enable when you attain full holy power."}
-obj["NOTIFICATION_ESSENCE_CHANGE"]	= { label="Essence Changes", tooltip="Enable when you change essence."}
+obj["NOTIFICATION_ESSENCE_CHANGE"]		= { label="Essence Changes", tooltip="Enable when you change essence."}
 obj["NOTIFICATION_ESSENCE_FULL"]		= { label="Essence Full", tooltip="Enable when you attain full essence."}
 obj["NOTIFICATION_HONOR_GAIN"]			= { label="Honor Gains", tooltip="Enable when you gain honor."}
 obj["NOTIFICATION_REP_GAIN"]			= { label="Reputation Gains", tooltip="Enable when you gain reputation."}

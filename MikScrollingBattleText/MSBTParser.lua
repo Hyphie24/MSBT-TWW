@@ -24,24 +24,17 @@ local GetTime = GetTime
 local UnitClass = UnitClass
 local UnitGUID = UnitGUID
 local UnitName = UnitName
-local Print = MikSBT.Print
+
 local EraseTable = MikSBT.EraseTable
+local GetSpellInfo = MikSBT.GetSpellInfo
+local Print = MikSBT.Print
 
-local function GetSpellInfo(SpellId)
-	local gsi_table = C_Spell.GetSpellInfo(SpellId)
-	if gsi_table == nil then
+local Obliterate = GetSpellInfo(49020)
+local FrostStrike = GetSpellInfo(49143)
+local Stormstrike = GetSpellInfo(17364)
 
-		return nil
-
-	end
-
-	return gsi_table.name, gsi_table.rank, gsi_table.originalIconID, gsi_table.castTime, gsi_table.minRange, gsi_table.maxRange, gsi_table.spellID, gsi_table.originalIcon
-
-end
-
-local Obliterate = C_Spell.GetSpellInfo(49020)
-local FrostStrike = C_Spell.GetSpellInfo(49143)
-local Stormstrike = C_Spell.GetSpellInfo(17364)
+local IsRetail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
+local IsCataClassic = WOW_PROJECT_ID == WOW_PROJECT_CATACLYSM_CLASSIC
 
 
 -------------------------------------------------------------------------------
@@ -170,7 +163,9 @@ end
 -- Tests if any of the bits in the passed testFlags are set in the unit flags.
 -- ****************************************************************************
 local function TestFlagsAny(unitFlags, testFlags)
-	if (bit_band(unitFlags, testFlags) > 0) then return true end
+	if bit_band(unitFlags, testFlags) > 0 then
+		return true
+	end
 end
 
 
@@ -178,7 +173,9 @@ end
 -- Tests if all of the passed testFlags are set in the unit flags.
 -- ****************************************************************************
 local function TestFlagsAll(unitFlags, testFlags)
-	if (bit_band(unitFlags, testFlags) == testFlags) then return true end
+	if bit_band(unitFlags, testFlags) == testFlags then
+		return true
+	end
 end
 
 
@@ -188,7 +185,9 @@ end
 local function SendParserEvent()
 	for handler in pairs(handlers) do
 		local success, ret = pcall(handler, parserEvent)
-		if (not success) then geterrorhandler()(ret) end
+		if not success then
+			geterrorhandler()(ret)
+		end
 	end
 end
 
@@ -206,7 +205,7 @@ local function GlobalStringCompareFunc(globalStringNameOne, globalStringNameTwo)
 	local gsTwoStripped = string_gsub(globalStringTwo, "%%%d?%$?[sd]", "")
 
 	-- Check if the stripped global strings are the same length.
-	if (string_len(gsOneStripped) == string_len(gsTwoStripped)) then
+	if string_len(gsOneStripped) == string_len(gsTwoStripped) then
 		-- Count the number of captures in each string.
 		local numCapturesOne = 0
 		for _ in string_gmatch(globalStringOne, "%%%d?%$?[sd]") do
@@ -236,10 +235,12 @@ end
 local function ConvertGlobalString(globalStringName)
 	-- Don't do anything if the passed global string does not exist.
 	local globalString = _G[globalStringName]
-	if (globalString == nil) then return end
+	if globalString == nil then
+		return
+	end
 
 	-- Return the cached conversion if it has already been converted.
-	if (searchPatterns[globalStringName]) then
+	if searchPatterns[globalStringName] then
 		return searchPatterns[globalStringName], captureOrders[globalStringName]
 	end
 
@@ -252,7 +253,9 @@ local function ConvertGlobalString(globalStringName)
 
 	-- Loop through each capture and setup the capture order.
 	for captureIndex in string_gmatch(searchPattern, "%%(%d)%$[sd]") do
-		if (not captureOrder) then captureOrder = {} end
+		if not captureOrder then
+			captureOrder = {}
+		end
 		numCaptures = numCaptures + 1
 		captureOrder[tonumber(captureIndex)] = numCaptures
 	end
@@ -278,7 +281,7 @@ end
 -- ****************************************************************************
 local function CaptureData(matchStart, matchEnd, c1, c2, c3, c4, c5, c6, c7, c8, c9)
 	-- Check if a match was found.
-	if (matchStart) then
+	if matchStart then
 		captureTable[1] = c1
 		captureTable[2] = c2
 		captureTable[3] = c3
@@ -304,9 +307,7 @@ end
 local function ReorderCaptures(capOrder)
 	local t, o = captureTable, capOrder
 
-	t[1], t[2], t[3], t[4], t[5], t[6], t[7], t[8], t[9] =
-	t[o[1] or 1], t[o[2] or 2], t[o[3] or 3], t[o[4] or 4], t[o[5] or 5],
-	t[o[6] or 6], t[o[7] or 7], t[o[8] or 8], t[o[9] or 9]
+	t[1], t[2], t[3], t[4], t[5], t[6], t[7], t[8], t[9] = t[o[1] or 1], t[o[2] or 2], t[o[3] or 3], t[o[4] or 4], t[o[5] or 5], t[o[6] or 6], t[o[7] or 7], t[o[8] or 8], t[o[9] or 9]
 end
 
 
@@ -315,27 +316,33 @@ end
 -- ****************************************************************************
 local function ParseSearchMessage(event, combatMessage)
 	-- Leave if there is no map of global strings to search for the event.
-	if (not searchMap[event]) then return end
+	if not searchMap[event] then
+		return
+	end
 
 	-- Loop through all of the global strings to search for the event.
 	for _, globalStringName in pairs(searchMap[event]) do
 		-- Make sure the capture func for the global string exists.
 		local captureFunc = searchCaptureFuncs[globalStringName]
-		if (captureFunc) then
+		if captureFunc then
 			-- First, check if there is a rare word for the global string and it is in the combat
 			-- message since a plain text search is faster than doing a full regular expression search.
-			if (not rareWords[globalStringName] or string_find(combatMessage, rareWords[globalStringName], 1, true)) then
+			if not rareWords[globalStringName] or string_find(combatMessage, rareWords[globalStringName], 1, true) then
 				-- Get capture data.
 				local matchEnd = CaptureData(string_find(combatMessage, searchPatterns[globalStringName]))
 
 
 				-- Check if a match was found.
-				if (matchEnd) then
+				if matchEnd then
 					-- Check if there is a capture order for the global string and reorder the data accordingly.
-					if (captureOrders[globalStringName]) then ReorderCaptures(captureOrders[globalStringName]) end
+					if captureOrders[globalStringName] then
+						ReorderCaptures(captureOrders[globalStringName])
+					end
 
-					-- Erase the parser event table..
-					for key in pairs(parserEvent) do parserEvent[key] = nil end
+					-- Erase the parser event table.
+					for key in pairs(parserEvent) do
+						parserEvent[key] = nil
+					end
 
 					-- Populate fields that exist for all events.
 					parserEvent.sourceGUID = GUID_NONE
@@ -364,12 +371,14 @@ end
 local function ParseLogMessage(timestamp, event, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, recipientGUID, recipientName, recipientFlags, recipientRaidFlags, ...)
 	-- Make sure the capture function for the event exists.
 	local captureFunc = captureFuncs[event]
-	if (not captureFunc) then return end
+	if not captureFunc then
+		return
+	end
 
 	-- Look for spells the player reflected and make the damage belong to the player.
-	if (sourceGUID == recipientGUID and reflectedTimes[recipientGUID] and event == "SPELL_DAMAGE") then
+	if sourceGUID == recipientGUID and reflectedTimes[recipientGUID] and event == "SPELL_DAMAGE" then
 		local skillID = ...
-		if (skillID == reflectedSkills[recipientGUID]) then
+		if skillID == reflectedSkills[recipientGUID] then
 			-- Clear the reflected skill entries.
 			reflectedTimes[recipientGUID] = nil
 			reflectedSkills[recipientGUID] = nil
@@ -386,19 +395,24 @@ local function ParseLogMessage(timestamp, event, hideCaster, sourceGUID, sourceN
 	local recipientUnit = unitMap[recipientGUID] or petMap[recipientGUID]
 
 	-- Treat guardians that are flagged as belonging to the player as their pet and vehicles and other objects as the player.
-	if (not sourceUnit and TestFlagsAll(sourceFlags, FLAGS_MINE)) then sourceUnit = TestFlagsAll(sourceFlags, FLAGS_MY_GUARDIAN) and "pet" or "player" end
-	if (not recipientUnit and TestFlagsAll(recipientFlags, FLAGS_MINE)) then recipientUnit = TestFlagsAll(recipientFlags, FLAGS_MY_GUARDIAN) and "pet" or "player" end
+	if not sourceUnit and TestFlagsAll(sourceFlags, FLAGS_MINE) then
+		sourceUnit = TestFlagsAll(sourceFlags, FLAGS_MY_GUARDIAN) and "pet" or "player"
+	end
+	if not recipientUnit and TestFlagsAll(recipientFlags, FLAGS_MINE) then
+		recipientUnit = TestFlagsAll(recipientFlags, FLAGS_MY_GUARDIAN) and "pet" or "player"
+	end
 
 	-- Ignore the event if it is not one that should be fully parsed and it doesn't pertain to the player
 	-- or pet. This is done to avoid wasting time parsing events that won't be used like damage that other
 	-- players are doing.
-	if (not fullParseEvents[event] and sourceUnit ~= "player" and sourceUnit ~= "pet" and
-					recipientUnit ~= "player" and recipientUnit ~= "pet") then
+	if not fullParseEvents[event] and sourceUnit ~= "player" and sourceUnit ~= "pet" and recipientUnit ~= "player" and recipientUnit ~= "pet" then
 		return
 	end
 
 	-- Erase the parser event table.
-	for k in pairs(parserEvent) do parserEvent[k] = nil end
+	for k in pairs(parserEvent) do
+		parserEvent[k] = nil
+	end
 
 	-- Populate fields that exist for all events.
 	parserEvent.sourceGUID = sourceGUID
@@ -423,10 +437,10 @@ local function ParseLogMessage(timestamp, event, hideCaster, sourceGUID, sourceN
 	end
 
 	-- Track reflected skills.
-	if (parserEvent.eventType == "miss" and parserEvent.missType == "REFLECT" and recipientUnit == "player") then
+	if parserEvent.eventType == "miss" and parserEvent.missType == "REFLECT" and recipientUnit == "player" then
 		-- Clean up old entries.
 		for guid, reflectTime in pairs(reflectedTimes) do
-			if (timestamp - reflectTime > REFLECT_HOLD_TIME) then
+			if timestamp - reflectTime > REFLECT_HOLD_TIME then
 				reflectedTimes[guid] = nil
 				reflectedSkills[guid] = nil
 			end
@@ -470,7 +484,7 @@ local function CreateSearchMap()
 		CHAT_MSG_COMBAT_HONOR_GAIN = {"COMBATLOG_HONORGAIN", "COMBATLOG_HONORAWARD"},
 
 		-- Reputation Gains/Losses.
-		CHAT_MSG_COMBAT_FACTION_CHANGE = {"FACTION_STANDING_INCREASED", "FACTION_STANDING_DECREASED"},
+		CHAT_MSG_COMBAT_FACTION_CHANGE = {"FACTION_STANDING_INCREASED", "FACTION_STANDING_DECREASED", "FACTION_STANDING_INCREASED_ACCOUNT_WIDE", "FACTION_STANDING_DECREASED_ACCOUNT_WIDE"},
 
 		-- Skill Gains.
 		CHAT_MSG_SKILL = {"SKILL_RANK_UP"},
@@ -496,7 +510,9 @@ local function CreateSearchMap()
 	for event, map in pairs(searchMap) do
 		-- Remove invalid global strings.
 		for i = #map, 1, -1 do
-			if (not _G[map[i]]) then table.remove(map, i) end
+			if not _G[map[i]] then
+				table.remove(map, i)
+			end
 		end
 
 		-- Sort the global strings from most to least specific.
@@ -511,26 +527,33 @@ end
 local function CreateSearchCaptureFuncs()
 	searchCaptureFuncs = {
 		-- Honor events.
-		COMBATLOG_HONORAWARD = function (p, c) p.eventType, p.amount = "honor", c[1] end,
-		COMBATLOG_HONORGAIN = function (p, c) p.eventType, p.sourceName, p.sourceRank, p.amount = "honor", c[1], c[2], c[3] end,
+		COMBATLOG_HONORAWARD = function(p, c) p.eventType, p.amount = "honor", c[1] end,
+		COMBATLOG_HONORGAIN = function(p, c) p.eventType, p.sourceName, p.sourceRank, p.amount = "honor", c[1], c[2], c[3] end,
 
 		-- Experience events.
-		COMBATLOG_XPGAIN_FIRSTPERSON = function (p, c) p.eventType, p.sourceName, p.amount = "experience", c[1], c[2] end,
-		COMBATLOG_XPGAIN_FIRSTPERSON_UNNAMED = function (p, c) p.eventType, p.amount = "experience", c[1] end,
+		COMBATLOG_XPGAIN_FIRSTPERSON = function(p, c) p.eventType, p.sourceName, p.amount = "experience", c[1], c[2] end,
+		COMBATLOG_XPGAIN_FIRSTPERSON_UNNAMED = function(p, c) p.eventType, p.amount = "experience", c[1] end,
 
 		-- Reputation events.
-		FACTION_STANDING_DECREASED = function (p, c) p.eventType, p.isLoss, p.factionName, p.amount = "reputation", true, c[1], c[2] end,
-		FACTION_STANDING_INCREASED = function (p, c) p.eventType, p.factionName, p.amount = "reputation", c[1], c[2] end,
+		FACTION_STANDING_DECREASED = function(p, c) p.eventType, p.isLoss, p.factionName, p.amount = "reputation", true, c[1], c[2] end,
+		FACTION_STANDING_INCREASED = function(p, c) p.eventType, p.factionName, p.amount = "reputation", c[1], c[2] end,
+		FACTION_STANDING_DECREASED_ACCOUNT_WIDE = function(p, c) p.eventType, p.isLoss, p.factionName, p.amount = "reputation", true, c[1], c[2] end,
+		FACTION_STANDING_INCREASED_ACCOUNT_WIDE = function(p, c) p.eventType, p.factionName, p.amount = "reputation", c[1], c[2] end,
 
 		-- Proficiency events.
-		SKILL_RANK_UP = function (p, c) p.eventType, p.skillName, p.amount = "proficiency", c[1], c[2] end,
+		SKILL_RANK_UP = function(p, c) p.eventType, p.skillName, p.amount = "proficiency", c[1], c[2] end,
 
 		-- Loot events.
-		LOOT_ITEM_SELF = function (p, c) p.eventType, p.itemLink, p.amount = "loot", c[1], c[2] end,
-		LOOT_ITEM_CREATED_SELF = function (p, c) p.eventType, p.isCreate, p.itemLink, p.amount = "loot", true, c[1], c[2] end,
-		LOOT_MONEY_SPLIT = function (p, c) p.eventType, p.isMoney, p.moneyString = "loot", true, c[1] end,
-		CURRENCY_GAINED = function (p, c) p.eventType, p.isCurrency, p.itemLink, p.amount = "loot", true, c[1], c[2] end,
+		LOOT_ITEM_SELF = function(p, c) p.eventType, p.itemLink, p.amount = "loot", c[1], c[2] end,
+		LOOT_ITEM_CREATED_SELF = function(p, c) p.eventType, p.isCreate, p.itemLink, p.amount = "loot", true, c[1], c[2] end,
+		LOOT_MONEY_SPLIT = function(p, c) p.eventType, p.isMoney, p.moneyString = "loot", true, c[1] end,
+		CURRENCY_GAINED = function(p, c) p.eventType, p.isCurrency, p.itemLink, p.amount = "loot", true, c[1], c[2] end,
 	}
+
+	if not IsRetail then
+		searchCaptureFuncs["FACTION_STANDING_DECREASED_ACCOUNT_WIDE"] = nil
+		searchCaptureFuncs["FACTION_STANDING_INCREASED_ACCOUNT_WIDE"] = nil
+	end
 
 	searchCaptureFuncs["LOOT_ITEM_SELF_MULTIPLE"] = searchCaptureFuncs["LOOT_ITEM_SELF"]
 	searchCaptureFuncs["LOOT_ITEM_CREATED_SELF_MULTIPLE"] = searchCaptureFuncs["LOOT_ITEM_CREATED_SELF"]
@@ -542,7 +565,7 @@ local function CreateSearchCaptureFuncs()
 
 	-- Print an error message for each global string that isn't found and remove it from the map.
 	for globalStringName in pairs(searchCaptureFuncs) do
-		if (not _G[globalStringName]) then
+		if not _G[globalStringName] then
 			Print("Unable to find global string: " .. globalStringName, 1, 0, 0)
 			searchCaptureFuncs[globalStringName] = nil
 		end
@@ -578,7 +601,7 @@ local function FindRareWords()
 
 		-- Find the rarest word in the global string.
 		for word in string_gmatch(strippedGS, "%w+") do
-			if (not leastSeen or wordCounts[word] < leastSeen) then
+			if not leastSeen or wordCounts[word] < leastSeen then
 				leastSeen = wordCounts[word]
 				rarestWord = word
 			end
@@ -598,7 +621,7 @@ local function ValidateRareWords()
 	-- Loop through all of the global strings there is a rare word entry for.
 	for globalStringName, rareWord in pairs(rareWords) do
 		-- Remove the entry if the rare word isn't found in the associated global string.
-		if (not string_find(_G[globalStringName], rareWord, 1, true)) then
+		if not string_find(_G[globalStringName], rareWord, 1, true) then
 			rareWords[globalStringName] = nil
 		end
 	end
@@ -624,12 +647,12 @@ end
 local function CreateCaptureFuncs()
 	captureFuncs = {
 		-- Damage events.
-		SWING_DAMAGE = function (p, ...) p.eventType, p.amount, p.overkillAmount, p.damageType, p.resistAmount, p.blockAmount, p.absorbAmount, p.isCrit, p.isGlancing, p.isCrushing = "damage", ... end,
-		RANGE_DAMAGE = function (p, ...) p.eventType, p.isRange, p.skillID, p.skillName, p.skillSchool, p.amount, p.overkillAmount, p.damageType, p.resistAmount, p.blockAmount, p.absorbAmount, p.isCrit, p.isGlancing, p.isCrushing, p.isOffHand = "damage", true, ... end,
-		SPELL_DAMAGE = function (p, ...) p.eventType, p.skillID, p.skillName, p.skillSchool, p.amount, p.overkillAmount, p.damageType, p.resistAmount, p.blockAmount, p.absorbAmount, p.isCrit, p.isGlancing, p.isCrushing, p.isOffHand = "damage", ... end,
-		SPELL_PERIODIC_DAMAGE = function (p, ...) p.eventType, p.isDoT, p.skillID, p.skillName, p.skillSchool, p.amount, p.overkillAmount, p.damageType, p.resistAmount, p.blockAmount, p.absorbAmount, p.isCrit, p.isGlancing, p.isCrushing, p.isOffHand = "damage", true, ... end,
-		SPELL_BUILDING_DAMAGE = function (p, ...) p.eventType, p.skillID, p.skillName, p.skillSchool, p.amount, p.overkillAmount, p.damageType, p.resistAmount, p.blockAmount, p.absorbAmount, p.isCrit, p.isGlancing, p.isCrushing = "damage", ... end,
-		DAMAGE_SHIELD = function (p, ...) p.eventType, p.isDamageShield, p.skillID, p.skillName, p.skillSchool, p.amount, p.overkillAmount, p.damageType, p.resistAmount, p.blockAmount, p.absorbAmount, p.isCrit, p.isGlancing, p.isCrushing = "damage", true, ... end,
+		SWING_DAMAGE = function(p, ...) p.eventType, p.amount, p.overkillAmount, p.damageType, p.resistAmount, p.blockAmount, p.absorbAmount, p.isCrit, p.isGlancing, p.isCrushing = "damage", ... end,
+		RANGE_DAMAGE = function(p, ...) p.eventType, p.isRange, p.skillID, p.skillName, p.skillSchool, p.amount, p.overkillAmount, p.damageType, p.resistAmount, p.blockAmount, p.absorbAmount, p.isCrit, p.isGlancing, p.isCrushing, p.isOffHand = "damage", true, ... end,
+		SPELL_DAMAGE = function(p, ...) p.eventType, p.skillID, p.skillName, p.skillSchool, p.amount, p.overkillAmount, p.damageType, p.resistAmount, p.blockAmount, p.absorbAmount, p.isCrit, p.isGlancing, p.isCrushing, p.isOffHand = "damage", ... end,
+		SPELL_PERIODIC_DAMAGE = function(p, ...) p.eventType, p.isDoT, p.skillID, p.skillName, p.skillSchool, p.amount, p.overkillAmount, p.damageType, p.resistAmount, p.blockAmount, p.absorbAmount, p.isCrit, p.isGlancing, p.isCrushing, p.isOffHand = "damage", true, ... end,
+		SPELL_BUILDING_DAMAGE = function(p, ...) p.eventType, p.skillID, p.skillName, p.skillSchool, p.amount, p.overkillAmount, p.damageType, p.resistAmount, p.blockAmount, p.absorbAmount, p.isCrit, p.isGlancing, p.isCrushing = "damage", ... end,
+		DAMAGE_SHIELD = function(p, ...) p.eventType, p.isDamageShield, p.skillID, p.skillName, p.skillSchool, p.amount, p.overkillAmount, p.damageType, p.resistAmount, p.blockAmount, p.absorbAmount, p.isCrit, p.isGlancing, p.isCrushing = "damage", true, ... end,
 		--SPELL_ABSORBED = function (p, ...) p.eventType, p.amount, p.skillID, p.skillName, p.skillSchool, p.absorbAmount = "damage", 0, ... end,
 		--[[SPELL_ABSORBED = function (p, ...)
 			--[dmgSpellID, dmgSpellName, dmgSpellSchool,] absorberGUID, absorberName, absorberFlags, absorberRaidFlags, absorbSkillID, absorbSkillName, absorbSkillSchool, absorbAmount
@@ -639,49 +662,49 @@ local function CreateCaptureFuncs()
 			end,]]
 
 		-- Miss events.
-		SWING_MISSED = function (p, ...) p.eventType, p.missType, p.isOffHand, p.amount = "miss", ... end,
-		RANGE_MISSED = function (p, ...) p.eventType, p.isRange, p.skillID, p.skillName, p.skillSchool, p.missType, p.isOffHand, p.amount = "miss", true, ... end,
-		SPELL_MISSED = function (p, ...) p.eventType, p.skillID, p.skillName, p.skillSchool, p.missType, p.isOffHand, p.amount = "miss", ... end,
-		SPELL_PERIODIC_MISSED = function (p, ...) p.eventType, p.skillID, p.skillName, p.skillSchool, p.missType, p.isOffHand, p.amount = "miss", ... end,
-		DAMAGE_SHIELD_MISSED = function (p, ...) p.eventType, p.isDamageShield, p.skillID, p.skillName, p.skillSchool, p.missType, p.isOffHand, p.amount = "miss", true, ... end,
-		SPELL_DISPEL_FAILED = function (p, ...) p.eventType, p.missType, p.skillID, p.skillName, p.skillSchool, p.extraSkillID, p.extraSkillName, p.extraSkillSchool = "miss", "RESIST", ... end,
+		SWING_MISSED = function(p, ...) p.eventType, p.missType, p.isOffHand, p.amount = "miss", ... end,
+		RANGE_MISSED = function(p, ...) p.eventType, p.isRange, p.skillID, p.skillName, p.skillSchool, p.missType, p.isOffHand, p.amount = "miss", true, ... end,
+		SPELL_MISSED = function(p, ...) p.eventType, p.skillID, p.skillName, p.skillSchool, p.missType, p.isOffHand, p.amount = "miss", ... end,
+		SPELL_PERIODIC_MISSED = function(p, ...) p.eventType, p.skillID, p.skillName, p.skillSchool, p.missType, p.isOffHand, p.amount = "miss", ... end,
+		DAMAGE_SHIELD_MISSED = function(p, ...) p.eventType, p.isDamageShield, p.skillID, p.skillName, p.skillSchool, p.missType, p.isOffHand, p.amount = "miss", true, ... end,
+		SPELL_DISPEL_FAILED = function(p, ...) p.eventType, p.missType, p.skillID, p.skillName, p.skillSchool, p.extraSkillID, p.extraSkillName, p.extraSkillSchool = "miss", "RESIST", ... end,
 
 		-- Heal events.
-		SPELL_HEAL = function (p, ...) p.eventType, p.skillID, p.skillName, p.skillSchool, p.amount, p.overhealAmount, p.absorbAmount, p.isCrit = "heal", ... end,
-		SPELL_PERIODIC_HEAL = function (p, ...) p.eventType, p.isHoT, p.skillID, p.skillName, p.skillSchool, p.amount, p.overhealAmount, p.absorbAmount, p.isCrit = "heal", true, ... end,
+		SPELL_HEAL = function(p, ...) p.eventType, p.skillID, p.skillName, p.skillSchool, p.amount, p.overhealAmount, p.absorbAmount, p.isCrit = "heal", ... end,
+		SPELL_PERIODIC_HEAL = function(p, ...) p.eventType, p.isHoT, p.skillID, p.skillName, p.skillSchool, p.amount, p.overhealAmount, p.absorbAmount, p.isCrit = "heal", true, ... end,
 
 		-- Environmental events.
-		ENVIRONMENTAL_DAMAGE = function (p, ...) p.eventType, p.hazardType, p.amount, p.overkillAmount, p.damageType, p.resistAmount, p.blockAmount, p.absorbAmount, p.isCrit, p.isGlancing, p.isCrushing = "environmental", ... end,
+		ENVIRONMENTAL_DAMAGE = function(p, ...) p.eventType, p.hazardType, p.amount, p.overkillAmount, p.damageType, p.resistAmount, p.blockAmount, p.absorbAmount, p.isCrit, p.isGlancing, p.isCrushing = "environmental", ... end,
 
 		-- Power events.
-		SPELL_ENERGIZE = function (p, ...) p.eventType, p.isGain, p.skillID, p.skillName, p.skillSchool, p.amount, p.overEnergized, p.powerType = "power", true, ... p.amount = floor(p.amount * 10 + 0.5) / 10 end,
-		SPELL_DRAIN = function (p, ...) p.eventType, p.isDrain, p.skillID, p.skillName, p.skillSchool, p.amount, p.powerType, p.extraAmount = "power", true, ... end,
-		SPELL_LEECH = function (p, ...) p.eventType, p.isLeech, p.skillID, p.skillName, p.skillSchool, p.amount, p.powerType, p.extraAmount = "power", true, ... end,
+		SPELL_ENERGIZE = function(p, ...) p.eventType, p.isGain, p.skillID, p.skillName, p.skillSchool, p.amount, p.overEnergized, p.powerType = "power", true, ... p.amount = floor(p.amount * 10 + 0.5) / 10 end,
+		SPELL_DRAIN = function(p, ...) p.eventType, p.isDrain, p.skillID, p.skillName, p.skillSchool, p.amount, p.powerType, p.extraAmount = "power", true, ... end,
+		SPELL_LEECH = function(p, ...) p.eventType, p.isLeech, p.skillID, p.skillName, p.skillSchool, p.amount, p.powerType, p.extraAmount = "power", true, ... end,
 
 		-- Interrupt events.
-		SPELL_INTERRUPT = function (p, ...) p.eventType, p.skillID, p.skillName, p.skillSchool, p.extraSkillID, p.extraSkillName, p.extraSkillSchool = "interrupt", ... end,
+		SPELL_INTERRUPT = function(p, ...) p.eventType, p.skillID, p.skillName, p.skillSchool, p.extraSkillID, p.extraSkillName, p.extraSkillSchool = "interrupt", ... end,
 
 		-- Aura events.
-		SPELL_AURA_APPLIED = function (p, ...) p.eventType, p.skillID, p.skillName, p.skillSchool, p.auraType, p.amount = "aura", ... end,
-		SPELL_AURA_APPLIED_DOSE = function (p, ...) p.eventType, p.isDose, p.skillID, p.skillName, p.skillSchool, p.auraType, p.amount = "aura", true, ... end,
-		SPELL_AURA_REMOVED = function (p, ...) p.eventType, p.isFade, p.skillID, p.skillName, p.skillSchool, p.auraType, p.amount = "aura", true, ... end,
-		SPELL_AURA_REMOVED_DOSE = function (p, ...) p.eventType, p.isFade, p.isDose, p.skillID, p.skillName, p.skillSchool, p.auraType, p.amount = "aura", true, true, ... end,
+		SPELL_AURA_APPLIED = function(p, ...) p.eventType, p.skillID, p.skillName, p.skillSchool, p.auraType, p.amount = "aura", ... end,
+		SPELL_AURA_APPLIED_DOSE = function(p, ...) p.eventType, p.isDose, p.skillID, p.skillName, p.skillSchool, p.auraType, p.amount = "aura", true, ... end,
+		SPELL_AURA_REMOVED = function(p, ...) p.eventType, p.isFade, p.skillID, p.skillName, p.skillSchool, p.auraType, p.amount = "aura", true, ... end,
+		SPELL_AURA_REMOVED_DOSE = function(p, ...) p.eventType, p.isFade, p.isDose, p.skillID, p.skillName, p.skillSchool, p.auraType, p.amount = "aura", true, true, ... end,
 
 		-- Enchant events.
-		ENCHANT_APPLIED = function (p, ...) p.eventType, p.skillName, p.itemID, p.itemName = "enchant", ... end,
-		ENCHANT_REMOVED = function (p, ...) p.eventType, p.isFade, p.skillName, p.itemID, p.itemName = "enchant", true, ... end,
+		ENCHANT_APPLIED = function(p, ...) p.eventType, p.skillName, p.itemID, p.itemName = "enchant", ... end,
+		ENCHANT_REMOVED = function(p, ...) p.eventType, p.isFade, p.skillName, p.itemID, p.itemName = "enchant", true, ... end,
 
 		-- Dispel events.
-		SPELL_DISPEL = function (p, ...) p.eventType, p.skillID, p.skillName, p.skillSchool, p.extraSkillID, p.extraSkillName, p.extraSkillSchool, p.auraType = "dispel", ... end,
+		SPELL_DISPEL = function(p, ...) p.eventType, p.skillID, p.skillName, p.skillSchool, p.extraSkillID, p.extraSkillName, p.extraSkillSchool, p.auraType = "dispel", ... end,
 
 		-- Cast events.
-		SPELL_CAST_START = function (p, ...) p.eventType, p.skillID, p.skillName, p.skillSchool = "cast", ... end,
+		SPELL_CAST_START = function(p, ...) p.eventType, p.skillID, p.skillName, p.skillSchool = "cast", ... end,
 
 		-- Kill events.
-		PARTY_KILL = function (p, ...) p.eventType = "kill" end,
+		PARTY_KILL = function(p, ...) p.eventType = "kill" end,
 
 		-- Extra Attack events.
-		SPELL_EXTRA_ATTACKS = function (p, ...) p.eventType, p.skillID, p.skillName, p.skillSchool, p.amount = "extraattacks", ... end,
+		SPELL_EXTRA_ATTACKS = function(p, ...) p.eventType, p.skillID, p.skillName, p.skillSchool, p.amount = "extraattacks", ... end,
 	}
 
 	captureFuncs["DAMAGE_SPLIT"] = captureFuncs["SPELL_DAMAGE"]
@@ -705,15 +728,17 @@ end
 -- ****************************************************************************
 local function OnUpdateDelayedInfo(this, elapsed)
 	-- Check if the unit map needs to be updated after a delay.
-	if (isUnitMapStale) then
+	if isUnitMapStale then
 		-- Increment the amount of time passed since the last update.
 		lastUnitMapUpdate = lastUnitMapUpdate + elapsed
 
 		-- Check if it's time for an update.
-		if (lastUnitMapUpdate >= UNIT_MAP_UPDATE_DELAY) then
+		if lastUnitMapUpdate >= UNIT_MAP_UPDATE_DELAY then
 			-- Update the player GUID if it isn't known yet and verify it's now known.
-			if (not playerGUID) then playerGUID = UnitGUID("player") end
-			if (playerGUID) then
+			if not playerGUID then
+				playerGUID = UnitGUID("player")
+			end
+			if playerGUID then
 				-- Erase the unit map table and mark all old units for cleanup from the class map.
 				local now = GetTime()
 				for guid in pairs(unitMap) do
@@ -728,16 +753,20 @@ local function OnUpdateDelayedInfo(this, elapsed)
 					local unitID = unitPrefix .. i
 					-- XXX: This call is returning nil for party members in certain circumstances - need to debug further.
 					local guid = UnitGUID(unitID)
-					if (guid) then
+					if guid then
 						unitMap[guid] = unitID
-						if (not classMap[guid]) then _, classMap[guid] = UnitClass(unitID) end
+						if not classMap[guid] then
+							_, classMap[guid] = UnitClass(unitID)
+						end
 						classTimes[guid] = nil
 					end
 				end -- Loop through group members
 
 				-- Add the player and player's class to the maps.
 				unitMap[playerGUID] = "player"
-				if (not classMap[playerGUID]) then _, classMap[playerGUID] = UnitClass("player") end
+				if not classMap[playerGUID] then
+					_, classMap[playerGUID] = UnitClass("player")
+				end
 				classTimes[playerGUID] = nil
 
 				-- Clear the unit map stale flag.
@@ -750,15 +779,15 @@ local function OnUpdateDelayedInfo(this, elapsed)
 	end -- Unit map is stale.
 
 	-- Check if the pet map needs to be updated after a delay.
-	if (isPetMapStale) then
+	if isPetMapStale then
 		-- Increment the amount of time passed since the last update.
 		lastPetMapUpdate = lastPetMapUpdate + elapsed
 
 		-- Check if it's time for an update.
-		if (lastPetMapUpdate >= PET_UPDATE_DELAY) then
+		if lastPetMapUpdate >= PET_UPDATE_DELAY then
 			-- Verify the player's pet is not in an unknown state if there is one.
 			local petName = UnitName("pet")
-			if (not petName or petName ~= UNKNOWN) then
+			if not petName or petName ~= UNKNOWN then
 				-- Erase the pet map table and mark all old units for cleanup from the class map.
 				local now = GetTime()
 				for guid in pairs(petMap) do
@@ -771,24 +800,30 @@ local function OnUpdateDelayedInfo(this, elapsed)
 				local numGroupMembers = GetNumGroupMembers()
 				for i = 1, numGroupMembers do
 					local unitID = unitPrefix .. i
-					if (UnitExists(unitID)) then
+					if UnitExists(unitID) then
 						-- XXX: This call is returning nil for party members in certain circumstances - need to debug further.
 						local guid = UnitGUID(unitID)
-						if (guid ~= nil) then
+						if guid ~= nil then
 							petMap[guid] = unitID
-							if (not classMap[guid]) then _, classMap[guid] = UnitClass(unitID) end
+							if not classMap[guid] then
+								_, classMap[guid] = UnitClass(unitID)
+							end
 							classTimes[guid] = nil
 						end
 					end
 				end -- Loop through group members
 
 				-- Add the player's pet and its class if there is one. Treat vehicles as the player instead of a pet.
-				if (petName) then
+				if petName then
 					local unitID = "pet"
 					local guid = UnitGUID(unitID)
-					if (guid == UnitGUID("vehicle")) then unitID = "player" end
+					if guid == UnitGUID("vehicle") then
+						unitID = "player"
+					end
 					petMap[guid] = unitID
-					if (not classMap[guid]) then _, classMap[guid] = UnitClass(unitID) end
+					if not classMap[guid] then
+						_, classMap[guid] = UnitClass(unitID)
+					end
 					classTimes[guid] = nil
 				end
 
@@ -802,7 +837,9 @@ local function OnUpdateDelayedInfo(this, elapsed)
 	end -- Pet map is stale.
 
 	-- Stop receiving updates if no more data needs to be updated.
-	if (not isUnitMapStale and not isPetMapStale) then this:Hide() end
+	if not isUnitMapStale and not isPetMapStale then
+		this:Hide()
+	end
 end
 
 
@@ -811,69 +848,88 @@ end
 -- ****************************************************************************
 local function OnEvent(this, event, arg1, arg2, ...)
 	-- Combat log events.
-	if (event == "COMBAT_LOG_EVENT_UNFILTERED") then
+	if event == "COMBAT_LOG_EVENT_UNFILTERED" then
 		ParseLogMessage(CombatLogGetCurrentEventInfo())
 
 	-- Mouseover changes.
-	elseif (event == "UPDATE_MOUSEOVER_UNIT") then
+	elseif event == "UPDATE_MOUSEOVER_UNIT" then
 		-- Map the GUID for the moused over unit to a class.
 		local mouseoverGUID = UnitGUID("mouseover")
-		if (not mouseoverGUID) then return end
+		if not mouseoverGUID then
+			return
+		end
 
 		-- Ignore the GUID if its class is already known and there is no cleanup time for it.
-		if (classMap[mouseoverGUID] and not classTimes[mouseoverGUID]) then return end
+		if classMap[mouseoverGUID] and not classTimes[mouseoverGUID] then
+			return
+		end
 
 		-- Update the cleanup time for the GUID and map it to a class if it's not already known.
 		classTimes[mouseoverGUID] = GetTime() + CLASS_HOLD_TIME
-		if (not classMap[mouseoverGUID]) then _, classMap[mouseoverGUID] = UnitClass("mouseover") end
+		if not classMap[mouseoverGUID] then
+			_, classMap[mouseoverGUID] = UnitClass("mouseover")
+		end
 
 	-- Target changes.
-	elseif (event == "PLAYER_TARGET_CHANGED") then
+	elseif event == "PLAYER_TARGET_CHANGED" then
 		-- Map the GUID for the target unit to a class.
 		local targetGUID = UnitGUID("target")
-		if (not targetGUID) then return end
+		if not targetGUID then
+			return
+		end
 
 		-- Ignore the GUID if its class is already known and there is no cleanup time for it.
-		if (classMap[targetGUID] and not classTimes[targetGUID]) then return end
+		if classMap[targetGUID] and not classTimes[targetGUID] then
+			return
+		end
 
 		-- Update the cleanup time for the GUID and map it to a class if it's not already known.
 		local now = GetTime()
 		classTimes[targetGUID] = now + CLASS_HOLD_TIME
-		if (not classMap[targetGUID]) then _, classMap[targetGUID] = UnitClass("target") end
+		if not classMap[targetGUID] then
+			_, classMap[targetGUID] = UnitClass("target")
+		end
 
 		-- Loop through all of the recent guid to class mappings and remove the old ones if enough time has passed.
-		if (now >= classMapCleanupTime) then
+		if now >= classMapCleanupTime then
 			for guid, cleanupTime in pairs(classTimes) do
-				if (now >= cleanupTime) then classMap[guid] = nil classTimes[guid] = nil end
+				if now >= cleanupTime then
+					classMap[guid] = nil
+					classTimes[guid] = nil
+				end
 			end
 
 			classMapCleanupTime = now + CLASS_HOLD_TIME
 		end -- Time to clean up class map.
 
 	-- Party/Raid changes.
-	elseif (event == "GROUP_ROSTER_UPDATE") then
+	elseif event == "GROUP_ROSTER_UPDATE" then
 		-- Set the unit map stale flag and schedule the unit map to be updated after a short delay.
 		isUnitMapStale = true
 		eventFrame:Show()
 
 	-- Pet changes.
-	elseif (event == "UNIT_PET") then
+	elseif event == "UNIT_PET" then
 		isPetMapStale = true
 		eventFrame:Show()
 
 	-- Arena opponent changes.
-	elseif (event == "ARENA_OPPONENT_UPDATE") then
+	elseif event == "ARENA_OPPONENT_UPDATE" then
 		-- Map the unit id and GUID for an arena unit to a class when it's seen.
-		if (arg2 == "seen") then
+		if arg2 == "seen" then
 			local arenaGUID = UnitGUID(arg1)
-			if (not arenaGUID) then return end
+			if not arenaGUID then
+				return
+			end
 			arenaUnits[arg1] = arenaGUID
 			_, classMap[arenaGUID] = UnitClass(arg1)
 
 		-- Remove the mappings for an arena unit when it's cleared.
-		elseif (arg2 == "cleared") then
+		elseif arg2 == "cleared" then
 			local arenaGUID = arenaUnits[arg1]
-			if (not arenaGUID) then return end
+			if not arenaGUID then
+				return
+			end
 			arenaUnits[arg1] = nil
 			classMap[arenaGUID] = nil
 		end
@@ -900,7 +956,7 @@ local function Enable()
 	-- Register additional events for unit and class map processing.
 	eventFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
 	eventFrame:RegisterEvent("UNIT_PET")
-	if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
+	if IsRetail or IsCataClassic then
 		eventFrame:RegisterEvent("ARENA_OPPONENT_UPDATE")
 	end
 	eventFrame:RegisterEvent("PLAYER_TARGET_CHANGED")

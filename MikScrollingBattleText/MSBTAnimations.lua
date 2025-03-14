@@ -22,6 +22,7 @@ local L = MikSBT.translations
 local table_remove = table.remove
 local string_find = string.find
 local string_lower = string.lower
+
 local IsModDisabled = MSBTProfiles.IsModDisabled
 local EraseTable = MikSBT.EraseTable
 
@@ -107,7 +108,9 @@ local function IsScrollAreaActive(scrollArea)
 	local saSettings = scrollAreas[scrollArea] or scrollAreas[DEFAULT_SCROLL_AREA]
 
 	-- Return false if the scroll area is invalid or disabled.
-	if (not saSettings or saSettings.disabled) then return false end
+	if not saSettings or saSettings.disabled then
+		return false
+	end
 
 	-- Return true to indicate the scroll area is active.
 	return true
@@ -134,7 +137,7 @@ local function UpdateScrollAreas()
 	EraseTable(externalScrollAreas)
 
 	-- Add scroll areas from the current profile.
-	if (rawget(MSBTProfiles.currentProfile, "scrollAreas")) then
+	if rawget(MSBTProfiles.currentProfile, "scrollAreas") then
 		for saKey, saSettings in pairs(MSBTProfiles.currentProfile.scrollAreas) do
 			scrollAreas[saKey] = saSettings
 			externalScrollAreas[saKey] = saSettings.name
@@ -143,7 +146,7 @@ local function UpdateScrollAreas()
 
 	-- Add scroll areas available in the master profile that aren't in the current profile.
 	for saKey, saSettings in pairs(MSBTProfiles.masterProfile.scrollAreas) do
-		if (not scrollAreas[saKey]) then
+		if not scrollAreas[saKey] then
 			scrollAreas[saKey] = saSettings
 			externalScrollAreas[saKey] = saSettings.name
 		end
@@ -157,7 +160,7 @@ end
 -- ****************************************************************************
 local function RegisterAnimationStyle(styleID, initHandler, availableDirections, availableBehaviors, localizationTable)
 	-- Make sure there isn't already an animation style with the same name and the passed init function is valid.
-	if (not animationStyles[styleID] and initHandler) then
+	if not animationStyles[styleID] and initHandler then
 		-- Create new animation style.
 		local animStyleSettings = {}
 		animStyleSettings.initHandler = initHandler
@@ -177,7 +180,7 @@ end
 -- ****************************************************************************
 local function RegisterStickyAnimationStyle(styleID, initHandler, availableDirections, availableBehaviors, localizationTable)
 	-- Make sure there isn't already an animation style with the same name and the passed init function is valid.
-	if (not stickyAnimationStyles[styleID] and initHandler) then
+	if not stickyAnimationStyles[styleID] and initHandler then
 		-- Create new animation style.
 		local animStyleSettings = {}
 		animStyleSettings.initHandler = initHandler
@@ -207,11 +210,15 @@ end
 -- ****************************************************************************
 local function LoadFont(fontName)
 	local fontPath = MikSBT.Media.fonts[fontName]
-	if fontPath == nil then return end
+	if fontPath == nil then
+		return
+	end
 
 	-- Don't load the font a second time.
 	local fontString = loadedFontStrings[fontName]
-	if fontString ~= nil then return end
+	if fontString ~= nil then
+		return
+	end
 
 	-- Create the font string and load the font. Since it's only being used to
 	-- cause the font to be loaded by the game, the default font size and outline
@@ -241,7 +248,7 @@ end
 local function Display(message, saSettings, isSticky, colorR, colorG, colorB, fontSize, fontPath, outlineIndex, fontAlpha, texturePath)
 	-- Get the correct animation style settings.
 	local animStyleSettings, direction, behavior, textAlignIndex
-	if (isSticky) then
+	if isSticky then
 		animStyleSettings = stickyAnimationStyles[saSettings.stickyAnimationStyle] or stickyAnimationStyles[DEFAULT_STICKY_ANIMATION_STYLE]
 		direction = saSettings.stickyDirection
 		behavior = saSettings.stickyBehavior
@@ -254,11 +261,17 @@ local function Display(message, saSettings, isSticky, colorR, colorG, colorB, fo
 	end
 
 	-- Leave the function if the animation style is invalid.
-	if (not animStyleSettings) then return end
+	if not animStyleSettings then
+		return
+	end
 
 	-- Create arrays to track the active display events for the scroll area if they haven't already been created.
-	if (not animationData.normal[saSettings]) then animationData.normal[saSettings] = {} end
-	if (isSticky and not animationData.sticky[saSettings]) then animationData.sticky[saSettings] = {} end
+	if not animationData.normal[saSettings] then
+		animationData.normal[saSettings] = {}
+	end
+	if isSticky and not animationData.sticky[saSettings] then
+		animationData.sticky[saSettings] = {}
+	end
 
 	-- Get the correct animation array.
 	local animationArray = isSticky and animationData.sticky[saSettings] or animationData.normal[saSettings]
@@ -267,10 +280,12 @@ local function Display(message, saSettings, isSticky, colorR, colorG, colorB, fo
 	-- area has been reached. Otherwise acquire one from cache or create a new one if there
 	-- aren't any available in cache.
 	local displayEvent
-	if (#animationArray >= MAX_ANIMATIONS_PER_AREA) then
+	if #animationArray >= MAX_ANIMATIONS_PER_AREA then
 		displayEvent = table_remove(animationArray, 1)
 		displayEvent.fontString:SetAlpha(0)
-		if (displayEvent.texture) then displayEvent.texture:SetAlpha(0) end
+		if displayEvent.texture then
+			displayEvent.texture:SetAlpha(0)
+		end
 	else
 		displayEvent = table_remove(displayEventCache) or { fontString = animationFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal") }
 	end
@@ -297,13 +312,17 @@ local function Display(message, saSettings, isSticky, colorR, colorG, colorB, fo
 	-- ensure any invalid font paths revert to the default.
 	local fontString = displayEvent.fontString
 	local fontOutline = OUTLINE_MAP[outlineIndex] or DEFAULT_OUTLINE
-	if (not fontPath) then fontPath = DEFAULT_FONT_PATH end
+	if not fontPath then
+		fontPath = DEFAULT_FONT_PATH
+	end
 	fontString:ClearAllPoints()
-	if (fontPath == DEFAULT_FONT_PATH) then fontString:SetFont(DEFAULT_FONT_PATH, fontSize, fontOutline) end
+	if fontPath == DEFAULT_FONT_PATH then
+		fontString:SetFont(DEFAULT_FONT_PATH, fontSize, fontOutline)
+	end
 	fontString:SetFont(fontPath, fontSize, fontOutline)
 	fontString:SetTextColor(colorR, colorG, colorB)
 	fontString:SetDrawLayer(isSticky and "OVERLAY" or "ARTWORK")
-	if (not currentProfile.textShadowingDisabled) then
+	if not currentProfile.textShadowingDisabled then
 		fontString:SetShadowColor(0, 0, 0, 1)
 		fontString:SetShadowOffset(1, -1)
 	else
@@ -314,12 +333,14 @@ local function Display(message, saSettings, isSticky, colorR, colorG, colorB, fo
 	fontString:SetText(message)
 
 	-- Set texture properties if there is a texture path that isn't the temp texture and icons are enabled.
-	if (texturePath and texturePath ~= TEMP_TEXTURE_PATH and not saSettings.skillIconsDisabled and not currentProfile.skillIconsDisabled) then
+	if texturePath and texturePath ~= TEMP_TEXTURE_PATH and not saSettings.skillIconsDisabled and not currentProfile.skillIconsDisabled then
 		-- Reuse the texture for the current display event if there is one.
 		local texture = displayEvent.texture
 
 		-- No texture so acquire one from cache or create a new one if there aren't any available in cache.
-		if (not texture) then texture = table_remove(textureCache) or animationFrame:CreateTexture(nil, "ARTWORK") end
+		if not texture then
+			texture = table_remove(textureCache) or animationFrame:CreateTexture(nil, "ARTWORK")
+		end
 
 		-- Set texture properties.
 		texture:ClearAllPoints()
@@ -327,7 +348,11 @@ local function Display(message, saSettings, isSticky, colorR, colorG, colorB, fo
 		texture:SetWidth(fontSize)
 		texture:SetHeight(fontSize)
 		texture:SetTexCoord(0.125, 0.875, 0.125, 0.875)
-		if (saSettings.iconAlign == "Right") then texture:SetPoint("LEFT", fontString, "RIGHT", 4, 0) else texture:SetPoint("RIGHT", fontString, "LEFT", -4, 0) end
+		if saSettings.iconAlign == "Right" then
+			texture:SetPoint("LEFT", fontString, "RIGHT", 4, 0)
+		else
+			texture:SetPoint("RIGHT", fontString, "LEFT", -4, 0)
+		end
 		texture:SetDrawLayer(isSticky and "OVERLAY" or "ARTWORK")
 		texture:SetAlpha(0)
 		displayEvent.texture = texture
@@ -346,11 +371,13 @@ local function Display(message, saSettings, isSticky, colorR, colorG, colorB, fo
 	displayEvent.scrollTime = displayEvent.scrollTime / displayEvent.animationSpeed
 
 	-- Add the display event to the appropriate scroll area array.
-	animationArray[#animationArray+1] = displayEvent
+	animationArray[#animationArray + 1] = displayEvent
 
 	-- Check if the animation frame is not visible and make it visible so the OnUpdate events start firing.
 	-- This is done to keep the number of OnUpdate events down to a minimum for better performance.
-	if (not animationFrame:IsVisible()) then animationFrame:Show() end
+	if not animationFrame:IsVisible() then
+		animationFrame:Show()
+	end
 end
 
 
@@ -365,19 +392,22 @@ local function DisplayEvent(eventSettings, message, texturePath)
 	local saSettings = scrollAreas[eventSettings.scrollArea] or scrollAreas[DEFAULT_SCROLL_AREA]
 
 	-- Leave the function if the scroll area is invalid or disabled.
-	if (not saSettings or saSettings.disabled) then return end
+	if not saSettings or saSettings.disabled then
+		return
+	end
 
 
 	-- Get the inherited font values.
 	local fontSize, fontName, outlineIndex, fontAlpha, isSticky
-	if (eventSettings.isCrit) then
+	if eventSettings.isCrit then
 		fontSize = eventSettings.fontSize or saSettings.critFontSize or currentProfile.critFontSize
 		fontName = eventSettings.fontName or saSettings.critFontName or currentProfile.critFontName
 		outlineIndex = eventSettings.outlineIndex or saSettings.critOutlineIndex or currentProfile.critOutlineIndex
 		fontAlpha = eventSettings.fontAlpha or saSettings.critFontAlpha or currentProfile.critFontAlpha
 
-		if (not currentProfile.stickyCritsDisabled) then isSticky = true end
-
+		if not currentProfile.stickyCritsDisabled then
+			isSticky = true
+		end
 	else
 		fontSize = eventSettings.fontSize or saSettings.normalFontSize or currentProfile.normalFontSize
 		fontName = eventSettings.fontName or saSettings.normalFontName or currentProfile.normalFontName
@@ -389,19 +419,21 @@ local function DisplayEvent(eventSettings, message, texturePath)
 
 	-- Play the event's sound file if there is one and sounds are enabled.
 	local soundFile = eventSettings.soundFile
-	if (soundFile and not currentProfile.soundsDisabled) then
+	if soundFile and not currentProfile.soundsDisabled then
 		for soundName, soundPath in MikSBT.IterateSounds() do
-			if (soundName == soundFile) then soundFile = soundPath end
+			if soundName == soundFile then
+				soundFile = soundPath
+			end
 		end
 		--print(soundFile)
-		if (type(soundFile) == "string") then
-			if (soundFile ~= "") then
+		if type(soundFile) == "string" then
+			if soundFile ~= "" then
 				local soundFileLower = string.lower(soundFile)
 				-- If the sound file doesn't contain any slashes, assume it is in MSBT's sound folder
-				if (soundFile ~= "" and not string.find(soundFile, "\\", nil, 1) and not string.find(soundFile, "/", nil, 1)) then
+				if soundFile ~= "" and not string.find(soundFile, "\\", nil, 1) and not string.find(soundFile, "/", nil, 1) then
 					soundFile = DEFAULT_SOUND_PATH .. soundFile
 				-- If the sound file doesn't begin with "Interface", don't bother trying
-				elseif ((string.find(soundFileLower, "interface", nil, 1) or 0) ~= 1) then
+				elseif (string.find(soundFileLower, "interface", nil, 1) or 0) ~= 1 then
 					return
 				end
 				PlaySoundFile(soundFile, "Master")
@@ -422,14 +454,18 @@ end
 -- ****************************************************************************
 local function DisplayMessage(message, scrollArea, isSticky, colorR, colorG, colorB, fontSize, fontName, outlineIndex, texturePath)
 	-- Do nothing if no message was passed or the mod is disabled.
-	if (not message or IsModDisabled()) then return end
+	if not message or IsModDisabled() then
+		return
+	end
 
 	-- Attempt to get the scroll area settings for the passed scroll area.
 	local saSettings = scrollAreas[scrollArea]
-	if (not saSettings) then
+	if not saSettings then
 		-- Loop through all of the scroll areas to see if the passed scroll area matches one of the names.
 		for _, settings in pairs(scrollAreas) do
-			if (scrollArea == settings.name) then saSettings = settings end
+			if scrollArea == settings.name then
+				saSettings = settings
+			end
 		end
 	end
 
@@ -437,20 +473,28 @@ local function DisplayMessage(message, scrollArea, isSticky, colorR, colorG, col
 	saSettings = saSettings or scrollAreas[DEFAULT_SCROLL_AREA]
 
 	-- Leave the function if the scroll area is invalid or disabled.
-	if (not saSettings or saSettings.disabled) then return end
+	if not saSettings or saSettings.disabled then
+		return
+	end
 
 
 	-- Set the red, green, and blue color values to default if they are invalid.
-	if (colorR == nil or colorR < 0 or colorR > 255) then colorR = 255 end
-	if (colorG == nil or colorG < 0 or colorG > 255) then colorG = 255 end
-	if (colorB == nil or colorB < 0 or colorB > 255) then colorB = 255 end
+	if colorR == nil or colorR < 0 or colorR > 255 then
+		colorR = 255
+	end
+	if colorG == nil or colorG < 0 or colorG > 255 then
+		colorG = 255
+	end
+	if colorB == nil or colorB < 0 or colorB > 255 then
+		colorB = 255
+	end
 
 
 	-- Get a local reference to the current profile.
 	local currentProfile = MSBTProfiles.currentProfile
 
 	-- Inherit the font size if the passed value is invalid.
-	if (fontSize == nil or fontSize < 4 or fontSize > 38) then
+	if fontSize == nil or fontSize < 4 or fontSize > 38 then
 		fontSize = saSettings.normalFontSize or currentProfile.normalFontSize
 	end
 
@@ -458,7 +502,7 @@ local function DisplayMessage(message, scrollArea, isSticky, colorR, colorG, col
 	local fontPath = fonts[fontName] or fonts[saSettings.normalFontName or currentProfile.normalFontName]
 
 	-- Inherit the font outline if the passed value is invalid.
-	if (not OUTLINE_MAP[outlineIndex]) then
+	if not OUTLINE_MAP[outlineIndex] then
 		outlineIndex = saSettings.normalOutlineIndex or currentProfile.normalOutlineIndex
 	end
 
@@ -477,22 +521,28 @@ local function AnimateEvent(displayEvent)
 	local texture = displayEvent.texture
 	local percentDone = displayEvent.elapsedTime / displayEvent.scrollTime
 
-	if (percentDone <= 1) then
+	if percentDone <= 1 then
 		-- Call the correct animation function for the display event.
 		displayEvent.animationHandler(displayEvent, percentDone)
 
 		-- Smoothly fade the text out as the animation completes.
 		local fadePercent = displayEvent.fadePercent
-		if (percentDone >= fadePercent) then displayEvent.alpha = (1 - percentDone) / (1 - fadePercent) end
+		if percentDone >= fadePercent then
+			displayEvent.alpha = (1 - percentDone) / (1 - fadePercent)
+		end
 
 		-- Move the text and set its alpha.
 		fontString:SetPoint(displayEvent.anchorPoint, displayEvent.offsetX + displayEvent.positionX, displayEvent.offsetY + displayEvent.positionY)
 		fontString:SetAlpha(displayEvent.masterAlpha * displayEvent.alpha)
-		if (texture) then texture:SetAlpha(displayEvent.masterAlpha * displayEvent.alpha) end
+		if texture then
+			texture:SetAlpha(displayEvent.masterAlpha * displayEvent.alpha)
+		end
 	else
 		-- Hide the text and set the animation complete flag.
 		fontString:SetAlpha(0)
-		if (texture) then texture:SetAlpha(0) end
+		if texture then
+			texture:SetAlpha(0)
+		end
 		displayEvent.animationComplete = true
 	end
 end
@@ -520,7 +570,7 @@ local function OnUpdateAnimationFrame(this, elapsed)
 				displayEvent.timeSinceLastUpdate = displayEvent.timeSinceLastUpdate + elapsed
 
 				-- Animate the event if enough time has passed and reset the last updated time.
-				if (displayEvent.timeSinceLastUpdate >= ANIMATION_DELAY) then
+				if displayEvent.timeSinceLastUpdate >= ANIMATION_DELAY then
 					displayEvent.elapsedTime = displayEvent.elapsedTime + displayEvent.timeSinceLastUpdate
 					AnimateEvent(displayEvent)
 					displayEvent.timeSinceLastUpdate = 0
@@ -535,19 +585,19 @@ local function OnUpdateAnimationFrame(this, elapsed)
 			-- that are complete.
 			for i = numEvents, 1, -1 do
 				displayEvent = displayEvents[i]
-				if (displayEvent.animationComplete) then
+				if displayEvent.animationComplete then
 					table_remove(displayEvents, i)
 
 					-- Reclaim the texture to cache and clear it so it can be reused if there is one.
 					texture = displayEvent.texture
-					if (texture) then
-						textureCache[#textureCache+1] = texture
+					if texture then
+						textureCache[#textureCache + 1] = texture
 						texture:SetTexture(nil)
 						displayEvent.texture = nil
 					end
 
 					-- Reclaim the display event to cache so it can be reused.
-					displayEventCache[#displayEventCache+1] = displayEvent
+					displayEventCache[#displayEventCache + 1] = displayEvent
 					displayEvent.animationComplete = false
 				end
 			end
@@ -557,7 +607,9 @@ local function OnUpdateAnimationFrame(this, elapsed)
 
 	-- Hide the animation frame if there are no active animations so the OnUpdate events stop firing.
 	-- This is done to keep the number of OnUpdate events down to a minimum for better performance.
-	if (allInactive) then this:Hide() end
+	if allInactive then
+		this:Hide()
+	end
 end
 
 

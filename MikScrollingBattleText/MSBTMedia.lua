@@ -59,8 +59,12 @@ local sounds = {}
 -- ****************************************************************************
 local function RegisterFont(fontName, fontPath)
 	-- Don't do anything if the font name or font path is invalid.
-	if (type(fontName) ~= "string" or type(fontPath) ~= "string") then return end
-	if (fontName == "" or fontPath == "") then return end
+	if type(fontName) ~= "string" or type(fontPath) ~= "string" then
+		return
+	end
+	if fontName == "" or fontPath == "" then
+		return
+	end
 
 	-- Register with MSBT and shared media.
 	fonts[fontName] = fontPath
@@ -88,11 +92,13 @@ end
 local function RegisterSound(soundName, soundPath)
 	-- Don't do anything if the sound name or sound path is invalid.
 	-- Allow non-string entries for soundPath as of Patch 8.2.0.
-	if (type(soundName) ~= "string") then return end
+	if type(soundName) ~= "string" then
+		return
+	end
 	-- Ensure that the custom file path is either a number (FileDataID)
 	-- Or a string that begins with "Interface" and ends with either ".mp3" or ".ogg"
 	local soundPathLower = string.lower(soundPath)
-	if (not soundPath or soundName == "" or soundPath == "" or (type(soundPath) == "string" and ((string.find(soundPathLower, "interface") or 0) ~= 1 or (not string.find(soundPathLower, ".mp3") and not string.find(soundPathLower, ".ogg"))))) then
+	if not soundPath or soundName == "" or soundPath == "" or (type(soundPath) == "string" and ((string.find(soundPathLower, "interface") or 0) ~= 1 or (not string.find(soundPathLower, ".mp3") and not string.find(soundPathLower, ".ogg")))) then
 		return
 	end
 
@@ -121,9 +127,9 @@ end
 -- Called by shared media when media is registered.
 -- ****************************************************************************
 local function SMLRegistered(event, mediaType, name)
-	if (mediaType == "font") then
+	if mediaType == "font" then
 		fonts[name] = SML:Fetch(mediaType, name)
-	elseif (mediaType == "sound") then
+	elseif mediaType == "sound" then
 		sounds[name] = SML:Fetch(mediaType, name)
 	end
 end
@@ -134,8 +140,12 @@ end
 -- ****************************************************************************
 local function OnVariablesInitialized()
 	-- Register custom fonts and sounds.
-	for fontName, fontPath in pairs(MSBTProfiles.savedMedia.fonts) do RegisterFont(fontName, fontPath) end
-	for soundName, soundPath in pairs(MSBTProfiles.savedMedia.sounds) do RegisterSound(soundName, soundPath) end
+	for fontName, fontPath in pairs(MSBTProfiles.savedMedia.fonts) do
+		RegisterFont(fontName, fontPath)
+	end
+	for soundName, soundPath in pairs(MSBTProfiles.savedMedia.sounds) do
+		RegisterSound(soundName, soundPath)
+	end
 end
 
 
@@ -144,12 +154,20 @@ end
 -------------------------------------------------------------------------------
 
 -- Register default fonts and sounds.
-for fontName, fontPath in pairs(DEFAULT_FONT_FILES) do RegisterFont(fontName, fontPath) end
-for soundName, soundPath in pairs(DEFAULT_SOUND_FILES) do RegisterSound(soundName, soundPath) end
+for fontName, fontPath in pairs(DEFAULT_FONT_FILES) do
+	RegisterFont(fontName, fontPath)
+end
+for soundName, soundPath in pairs(DEFAULT_SOUND_FILES) do
+	RegisterSound(soundName, soundPath)
+end
 
 -- Register the currently available fonts and sounds in shared media with MSBT.
-for index, fontName in pairs(SML:List("font")) do fonts[fontName] = SML:Fetch("font", fontName) end
-for index, soundName in pairs(SML:List("sound")) do sounds[soundName] = SML:Fetch("sound", soundName) end
+for index, fontName in pairs(SML:List("font")) do
+	fonts[fontName] = SML:Fetch("font", fontName)
+end
+for index, soundName in pairs(SML:List("sound")) do
+	sounds[soundName] = SML:Fetch("sound", soundName)
+end
 
 -- Register a callback with shared media to keep MSBT synced.
 SML.RegisterCallback("MSBTSharedMedia", "LibSharedMedia_Registered", SMLRegistered)

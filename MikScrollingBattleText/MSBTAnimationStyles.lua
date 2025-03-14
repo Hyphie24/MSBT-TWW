@@ -70,7 +70,7 @@ local function AnimatePowNormal(displayEvent, animationProgress)
 	local fadeInPercent = POW_FADE_IN_TIME / displayEvent.scrollTime
 
 	-- Scale the text height.
-	if (animationProgress <= fadeInPercent) then
+	if animationProgress <= fadeInPercent then
 		displayEvent.fontString:SetTextHeight(displayEvent.fontSize * (1 + ((1 - animationProgress / fadeInPercent) * POW_TEXT_DELTA)))
 
 	-- Reset the font properties to normal.
@@ -88,14 +88,14 @@ local function AnimatePowJiggle(displayEvent, animationProgress)
 	local fadeInPercent = POW_FADE_IN_TIME / displayEvent.scrollTime
 
 	-- Scale the text height.
-	if (animationProgress <= fadeInPercent) then
+	if animationProgress <= fadeInPercent then
 		displayEvent.fontString:SetTextHeight(displayEvent.fontSize * (1 + ((1 - animationProgress / fadeInPercent) * POW_TEXT_DELTA)))
 		return
 
 	-- Jiggle the text around and reset the font properties to normal.
-	elseif (animationProgress <= displayEvent.fadePercent) then
+	elseif animationProgress <= displayEvent.fadePercent then
 		local elapsedTime = displayEvent.elapsedTime
-		if (elapsedTime - displayEvent.timeLastJiggled > JIGGLE_DELAY_TIME) then
+		if elapsedTime - displayEvent.timeLastJiggled > JIGGLE_DELAY_TIME then
 			displayEvent.positionX = displayEvent.originalPositionX + math_random(-1, 1)
 			displayEvent.positionY = displayEvent.originalPositionY + math_random(-1, 1)
 			displayEvent.timeLastJiggled = elapsedTime
@@ -125,11 +125,11 @@ local function InitPow(newDisplayEvent, activeDisplayEvents, direction, behavior
 
 	-- Set the new event's starting position.
 	local anchorPoint = newDisplayEvent.anchorPoint
-	if (anchorPoint == "BOTTOMLEFT") then
+	if anchorPoint == "BOTTOMLEFT" then
 		newDisplayEvent.positionX = 0
-	elseif (anchorPoint == "BOTTOM") then
+	elseif anchorPoint == "BOTTOM" then
 		newDisplayEvent.positionX = newDisplayEvent.scrollWidth / 2
-	elseif (anchorPoint == "BOTTOMRIGHT") then
+	elseif anchorPoint == "BOTTOMRIGHT" then
 		newDisplayEvent.positionX = newDisplayEvent.scrollWidth
 	end
 	newDisplayEvent.positionY = newDisplayEvent.scrollHeight / 2
@@ -147,7 +147,7 @@ local function InitPow(newDisplayEvent, activeDisplayEvents, direction, behavior
 
 
 	-- Check if the text is scrolling down.
-	if (direction == "Down") then
+	if direction == "Down" then
 		-- Get the middle sticky.
 		local middleSticky = math_floor((numActiveAnimations + 2) / 2)
 
@@ -157,13 +157,13 @@ local function InitPow(newDisplayEvent, activeDisplayEvents, direction, behavior
 
 		-- Loop backwards from the middle sticky and move the animating display events so they don't collide.
 		for x = middleSticky - 1, 1, -1 do
-			activeDisplayEvents[x].originalPositionY = activeDisplayEvents[x+1].originalPositionY - activeDisplayEvents[x].fontSize - MIN_VERTICAL_SPACING
+			activeDisplayEvents[x].originalPositionY = activeDisplayEvents[x + 1].originalPositionY - activeDisplayEvents[x].fontSize - MIN_VERTICAL_SPACING
 			activeDisplayEvents[x].positionY = activeDisplayEvents[x].originalPositionY
 		end
 
 		-- Loop forwards from the middle sticky and move the animating display events so they don't collide.
 		for x = middleSticky + 1, numActiveAnimations do
-			activeDisplayEvents[x].originalPositionY = activeDisplayEvents[x-1].originalPositionY + activeDisplayEvents[x-1].fontSize + MIN_VERTICAL_SPACING
+			activeDisplayEvents[x].originalPositionY = activeDisplayEvents[x - 1].originalPositionY + activeDisplayEvents[x - 1].fontSize + MIN_VERTICAL_SPACING
 			activeDisplayEvents[x].positionY = activeDisplayEvents[x].originalPositionY
 		end
 
@@ -182,13 +182,13 @@ local function InitPow(newDisplayEvent, activeDisplayEvents, direction, behavior
 
 		-- Loop backwards from the middle sticky and move the animating display events so they don't collide.
 		for x = middleSticky - 1, 1, -1 do
-			activeDisplayEvents[x].originalPositionY = activeDisplayEvents[x+1].originalPositionY + activeDisplayEvents[x+1].fontSize + MIN_VERTICAL_SPACING
+			activeDisplayEvents[x].originalPositionY = activeDisplayEvents[x + 1].originalPositionY + activeDisplayEvents[x + 1].fontSize + MIN_VERTICAL_SPACING
 			activeDisplayEvents[x].positionY = activeDisplayEvents[x].originalPositionY
 		end
 
 		-- Loop forwards from the middle sticky and move the animating display events so they don't collide.
 		for x = middleSticky + 1, numActiveAnimations do
-			activeDisplayEvents[x].originalPositionY = activeDisplayEvents[x-1].originalPositionY - activeDisplayEvents[x].fontSize - MIN_VERTICAL_SPACING
+			activeDisplayEvents[x].originalPositionY = activeDisplayEvents[x - 1].originalPositionY - activeDisplayEvents[x].fontSize - MIN_VERTICAL_SPACING
 			activeDisplayEvents[x].positionY = activeDisplayEvents[x].originalPositionY
 		end
 
@@ -211,14 +211,14 @@ local function ScrollLeftAngledUp(displayEvent, animationProgress)
 	local horizontalPhasePercent = displayEvent.horizontalPhasePercent
 
 	-- Move the event in an angled line.
-	if (animationProgress <= linePhasePercent) then
+	if animationProgress <= linePhasePercent then
 		-- Calculate how far along the current phase is and set the x and y positions accordingly.
 		local phaseProgress = animationProgress / linePhasePercent
 		displayEvent.positionX = displayEvent.scrollWidth - (displayEvent.startPositionX + (displayEvent.finishPositionX - displayEvent.startPositionX) * phaseProgress)
 		displayEvent.positionY = displayEvent.finishPositionY * phaseProgress
 
 	-- Wait a bit at the finish position.
-	elseif (animationProgress <= horizontalPhasePercent) then
+	elseif animationProgress <= horizontalPhasePercent then
 		displayEvent.positionX = displayEvent.scrollWidth - displayEvent.finishPositionX
 		displayEvent.positionY = displayEvent.finishPositionY
 
@@ -239,14 +239,14 @@ local function ScrollLeftAngledDown(displayEvent, animationProgress)
 	local horizontalPhasePercent = displayEvent.horizontalPhasePercent
 
 	-- Move the event in an angled line.
-	if (animationProgress <= linePhasePercent) then
+	if animationProgress <= linePhasePercent then
 		-- Calculate how far along the current phase is and set the x and y positions accordingly.
 		local phaseProgress = animationProgress / linePhasePercent
 		displayEvent.positionX = displayEvent.scrollWidth - (displayEvent.startPositionX + (displayEvent.finishPositionX - displayEvent.startPositionX) * phaseProgress)
 		displayEvent.positionY = displayEvent.scrollHeight - displayEvent.finishPositionY * phaseProgress
 
 	-- Wait a bit at the finish position.
-	elseif (animationProgress <= horizontalPhasePercent) then
+	elseif animationProgress <= horizontalPhasePercent then
 		displayEvent.positionX = displayEvent.scrollWidth - displayEvent.finishPositionX
 		displayEvent.positionY = displayEvent.scrollHeight - displayEvent.finishPositionY
 
@@ -267,14 +267,14 @@ local function ScrollRightAngledUp(displayEvent, animationProgress)
 	local horizontalPhasePercent = displayEvent.horizontalPhasePercent
 
 	-- Move the event in an angled line.
-	if (animationProgress <= linePhasePercent) then
+	if animationProgress <= linePhasePercent then
 		-- Calculate how far along the current phase is and set the x and y positions accordingly.
 		local phaseProgress = animationProgress / linePhasePercent
 		displayEvent.positionX = displayEvent.startPositionX + (displayEvent.finishPositionX - displayEvent.startPositionX) * phaseProgress
 		displayEvent.positionY = displayEvent.finishPositionY * phaseProgress
 
 	-- Wait a bit at the finish position.
-	elseif (animationProgress <= horizontalPhasePercent) then
+	elseif animationProgress <= horizontalPhasePercent then
 		displayEvent.positionX = displayEvent.finishPositionX
 		displayEvent.positionY = displayEvent.finishPositionY
 
@@ -295,14 +295,14 @@ local function ScrollRightAngledDown(displayEvent, animationProgress)
 	local horizontalPhasePercent = displayEvent.horizontalPhasePercent
 
 	-- Move the event in an angled line.
-	if (animationProgress <= linePhasePercent) then
+	if animationProgress <= linePhasePercent then
 		-- Calculate how far along the current phase is and set the x and y positions accordingly.
 		local phaseProgress = animationProgress / linePhasePercent
 		displayEvent.positionX = displayEvent.startPositionX + (displayEvent.finishPositionX - displayEvent.startPositionX) * phaseProgress
 		displayEvent.positionY = displayEvent.scrollHeight - displayEvent.finishPositionY * phaseProgress
 
 	-- Wait a bit at the finish position.
-	elseif (animationProgress <= horizontalPhasePercent) then
+	elseif animationProgress <= horizontalPhasePercent then
 		displayEvent.positionX = displayEvent.finishPositionX
 		displayEvent.positionY = displayEvent.scrollHeight - displayEvent.finishPositionY
 
@@ -323,7 +323,7 @@ local function InitAngled(newDisplayEvent, activeDisplayEvents, direction, behav
 	-- Modify the direction and anchor if the direction is alternating.
 	local startPositionX = 0
 	local anchorPoint = newDisplayEvent.anchorPoint
-	if (direction ~= "Left" and direction ~= "Right") then
+	if direction ~= "Left" and direction ~= "Right" then
 		-- Select direction and anchor point based on the last event.
 		direction = (lastAngledDirection[activeDisplayEvents] == "Left") and "Right" or "Left"
 		lastAngledDirection[activeDisplayEvents] = direction
@@ -335,7 +335,7 @@ local function InitAngled(newDisplayEvent, activeDisplayEvents, direction, behav
 	end
 
 	-- Choose correct animation function.
-	if (direction == "Right") then
+	if direction == "Right" then
 		newDisplayEvent.animationHandler = (behavior == "AngleDown") and ScrollRightAngledDown or ScrollRightAngledUp
 	else
 		newDisplayEvent.animationHandler = (behavior == "AngleDown") and ScrollLeftAngledDown or ScrollLeftAngledUp
@@ -345,7 +345,9 @@ local function InitAngled(newDisplayEvent, activeDisplayEvents, direction, behav
 	local finishPositionY
 	finishPositionY = lastAngledFinishPositionY[activeDisplayEvents] or newDisplayEvent.scrollHeight
 	finishPositionY = finishPositionY - newDisplayEvent.fontSize - MIN_VERTICAL_SPACING
-	if (finishPositionY < 0) then finishPositionY = newDisplayEvent.scrollHeight end
+	if finishPositionY < 0 then
+		finishPositionY = newDisplayEvent.scrollHeight
+	end
 
 	-- Calculate how long the animation should take based on the distance the text has to travel.
 	local animationSpeed = newDisplayEvent.animationSpeed
@@ -400,11 +402,11 @@ local function InitStraight(newDisplayEvent, activeDisplayEvents, direction, beh
 
 	-- Set the new event's starting X position.
 	local anchorPoint = newDisplayEvent.anchorPoint
-	if (anchorPoint == "BOTTOMLEFT") then
+	if anchorPoint == "BOTTOMLEFT" then
 		newDisplayEvent.positionX = 0
-	elseif (anchorPoint == "BOTTOM") then
+	elseif anchorPoint == "BOTTOM" then
 		newDisplayEvent.positionX = newDisplayEvent.scrollWidth / 2
-	elseif (anchorPoint == "BOTTOMRIGHT") then
+	elseif anchorPoint == "BOTTOMRIGHT" then
 		newDisplayEvent.positionX = newDisplayEvent.scrollWidth
 	end
 
@@ -412,12 +414,14 @@ local function InitStraight(newDisplayEvent, activeDisplayEvents, direction, beh
 	local numActiveAnimations = #activeDisplayEvents
 
 	-- Scroll text down.
-	if (direction == "Down") then
+	if direction == "Down" then
 		-- Choose the correct animation function.
 		newDisplayEvent.animationHandler = ScrollDown
 
 		-- Exit if there is no need to check for collisions.
-		if (numActiveAnimations == 0) then return end
+		if numActiveAnimations == 0 then
+			return
+		end
 
 		-- Scale the per pixel time based on the animation speed.
 		local perPixelTime = MOVEMENT_SPEED / newDisplayEvent.animationSpeed
@@ -432,7 +436,7 @@ local function InitStraight(newDisplayEvent, activeDisplayEvents, direction, beh
 			topTimeCurrent = currentDisplayEvent.elapsedTime + (currentDisplayEvent.fontSize + MIN_VERTICAL_SPACING) * perPixelTime
 
 			-- Adjust the elapsed time of the previous display event if the current one is colliding with it.
-			if (prevDisplayEvent.elapsedTime < topTimeCurrent) then
+			if prevDisplayEvent.elapsedTime < topTimeCurrent then
 				prevDisplayEvent.elapsedTime = topTimeCurrent
 			else
 				-- Don't continue checking if there is no need.
@@ -448,7 +452,9 @@ local function InitStraight(newDisplayEvent, activeDisplayEvents, direction, beh
 		newDisplayEvent.animationHandler = ScrollUp
 
 		-- Exit if there is no need to check for collisions.
-		if (numActiveAnimations == 0) then return end
+		if numActiveAnimations == 0 then
+			return
+		end
 
 		-- Scale the per pixel time based on the animation speed.
 		local perPixelTime = MOVEMENT_SPEED / newDisplayEvent.animationSpeed
@@ -463,7 +469,7 @@ local function InitStraight(newDisplayEvent, activeDisplayEvents, direction, beh
 			topTimePrev = prevDisplayEvent.elapsedTime - (prevDisplayEvent.fontSize + MIN_VERTICAL_SPACING) * perPixelTime
 
 			-- Adjust the elapsed time of the previous display event if the current one is colliding with it.
-			if (topTimePrev < currentDisplayEvent.elapsedTime) then
+			if topTimePrev < currentDisplayEvent.elapsedTime then
 				prevDisplayEvent.elapsedTime = currentDisplayEvent.elapsedTime + (prevDisplayEvent.fontSize + MIN_VERTICAL_SPACING) * perPixelTime
 			else
 				-- Exit if there is no need to continue checking for collisions.
@@ -545,10 +551,10 @@ local function InitParabola(newDisplayEvent, activeDisplayEvents, direction, beh
 	InitStraight(newDisplayEvent, activeDisplayEvents, direction, behavior)
 
 	-- Choose correction animation function.
-	if (direction == "Down") then
-			newDisplayEvent.animationHandler = (behavior == "CurvedRight") and ScrollRightParabolaDown or ScrollLeftParabolaDown
+	if direction == "Down" then
+		newDisplayEvent.animationHandler = (behavior == "CurvedRight") and ScrollRightParabolaDown or ScrollLeftParabolaDown
 	else
-			newDisplayEvent.animationHandler = (behavior == "CurvedRight") and ScrollRightParabolaUp or ScrollLeftParabolaUp
+		newDisplayEvent.animationHandler = (behavior == "CurvedRight") and ScrollRightParabolaUp or ScrollLeftParabolaUp
 	end
 
 	-- Calculate the scroll area midpoint.
@@ -603,13 +609,13 @@ local function RepositionHorizontalRight(currentDisplayEvent, activeDisplayEvent
 		bottomPrev = prevDisplayEvent.positionY
 
 		-- Check for a vertical collision.
-		if ((topCurrent >= bottomPrev and topCurrent <= topPrev) or (bottomCurrent >= bottomPrev and bottomCurrent <= topPrev)) then
+		if (topCurrent >= bottomPrev and topCurrent <= topPrev) or (bottomCurrent >= bottomPrev and bottomCurrent <= topPrev) then
 			-- Calculate the elapsed time for the left and right points.
 			leftTimePrev = prevDisplayEvent.elapsedTime + (prevDisplayEvent.offsetLeft or 0) * perPixelTime
 			rightTimeCurrent = currentDisplayEvent.elapsedTime + ((currentDisplayEvent.offsetRight or 0) + MIN_HORIZONTAL_SPACING) * perPixelTime
 
 			-- Adjust the elapsed time of the previous display event if the current one is colliding with it.
-			if (leftTimePrev <= rightTimeCurrent) then
+			if leftTimePrev <= rightTimeCurrent then
 				prevDisplayEvent.elapsedTime = rightTimeCurrent + math_abs((prevDisplayEvent.offsetLeft or 0) * perPixelTime)
 
 				-- Move events that are now colliding as a result of moving this one.
@@ -640,13 +646,13 @@ local function RepositionHorizontalLeft(currentDisplayEvent, activeDisplayEvents
 		bottomPrev = prevDisplayEvent.positionY
 
 		-- Check for a vertical collision.
-		if ((topCurrent >= bottomPrev and topCurrent <= topPrev) or (bottomCurrent >= bottomPrev and bottomCurrent <= topPrev)) then
+		if (topCurrent >= bottomPrev and topCurrent <= topPrev) or (bottomCurrent >= bottomPrev and bottomCurrent <= topPrev) then
 			-- Calculate the elapsed time for the left and right points.
 			rightTimePrev = prevDisplayEvent.elapsedTime - ((prevDisplayEvent.offsetRight or 0) + MIN_HORIZONTAL_SPACING) * perPixelTime
 			leftTimeCurrent = currentDisplayEvent.elapsedTime - (currentDisplayEvent.offsetLeft or 0) * perPixelTime
 
 			-- Adjust the elapsed time of the previous display event if the current one is colliding with it.
-			if (rightTimePrev <= leftTimeCurrent) then
+			if rightTimePrev <= leftTimeCurrent then
 				prevDisplayEvent.elapsedTime = leftTimeCurrent + ((prevDisplayEvent.offsetRight or 0) + MIN_HORIZONTAL_SPACING) * perPixelTime
 
 				-- Move events that are now colliding as a result of moving this one.
@@ -667,7 +673,7 @@ local function InitHorizontal(newDisplayEvent, activeDisplayEvents, direction, b
 
 	-- Modify the direction and anchor if the direction is alternating.
 	local anchorPoint = newDisplayEvent.anchorPoint
-	if (direction ~= "Left" and direction ~= "Right") then
+	if direction ~= "Left" and direction ~= "Right" then
 		-- Select direction and anchor point based on the last event.
 		direction = (lastHorizontalDirection[activeDisplayEvents] == "Left") and "Right" or "Left"
 		lastHorizontalDirection[activeDisplayEvents] = direction
@@ -680,14 +686,14 @@ local function InitHorizontal(newDisplayEvent, activeDisplayEvents, direction, b
 
 	-- Calculate the left and right offsets from the anchor point.
 	local fontStringWidth = newDisplayEvent.fontString:GetStringWidth()
-	if (anchorPoint == "BOTTOMLEFT") then
+	if anchorPoint == "BOTTOMLEFT" then
 		newDisplayEvent.offsetLeft = 0
 		newDisplayEvent.offsetRight = fontStringWidth
-	elseif (anchorPoint == "BOTTOM") then
+	elseif anchorPoint == "BOTTOM" then
 		local halfWidth = fontStringWidth / 2
 		newDisplayEvent.offsetLeft = -halfWidth
 		newDisplayEvent.offsetRight = halfWidth
-	elseif (anchorPoint == "BOTTOMRIGHT") then
+	elseif anchorPoint == "BOTTOMRIGHT" then
 		newDisplayEvent.offsetLeft = -fontStringWidth
 		newDisplayEvent.offsetRight = 0
 	end
@@ -695,18 +701,22 @@ local function InitHorizontal(newDisplayEvent, activeDisplayEvents, direction, b
 
 	-- Check if the text is growing down.
 	local positionY
-	if (behavior == "GrowDown") then
+	if behavior == "GrowDown" then
 		-- Calculate the y position based on the last event.
 		positionY = lastHorizontalPositionY[activeDisplayEvents] or newDisplayEvent.scrollHeight
 		positionY = positionY - newDisplayEvent.fontSize - MIN_VERTICAL_SPACING
-		if (positionY < 0) then positionY = newDisplayEvent.scrollHeight end
+		if positionY < 0 then
+			positionY = newDisplayEvent.scrollHeight
+		end
 
 	-- Text is growing up.
 	else
 		-- Calculate the y position based on the last event.
 		positionY = lastHorizontalPositionY[activeDisplayEvents] or 0
 		positionY = positionY + newDisplayEvent.fontSize + MIN_VERTICAL_SPACING
-		if (positionY > newDisplayEvent.scrollHeight) then positionY = 0 end
+		if positionY > newDisplayEvent.scrollHeight then
+			positionY = 0
+		end
 	end
 
 	-- Set the y position to the calculated value and save it for the next event.
@@ -717,12 +727,14 @@ local function InitHorizontal(newDisplayEvent, activeDisplayEvents, direction, b
 	local numActiveAnimations = #activeDisplayEvents
 
 	-- Scroll text right.
-	if (direction == "Right") then
+	if direction == "Right" then
 		-- Choose the correct animation function.
 		newDisplayEvent.animationHandler = ScrollRight
 
 		-- Exit if there is no need to check for collisions.
-		if (numActiveAnimations == 0) then return end
+		if numActiveAnimations == 0 then
+			return
+		end
 
 		-- Move events that are colliding.
 		RepositionHorizontalRight(newDisplayEvent, activeDisplayEvents, numActiveAnimations)
@@ -733,7 +745,9 @@ local function InitHorizontal(newDisplayEvent, activeDisplayEvents, direction, b
 		newDisplayEvent.animationHandler = ScrollLeft
 
 		-- Exit if there is no need to check for collisions.
-		if (numActiveAnimations == 0) then return end
+		if numActiveAnimations == 0 then
+			return
+		end
 
 		-- Move events that are colliding.
 		RepositionHorizontalLeft(newDisplayEvent, activeDisplayEvents, numActiveAnimations)
@@ -766,11 +780,11 @@ local function InitStatic(newDisplayEvent, activeDisplayEvents, direction, behav
 
 	-- Set the new event's starting X position.
 	local anchorPoint = newDisplayEvent.anchorPoint
-	if (anchorPoint == "BOTTOMLEFT") then
+	if anchorPoint == "BOTTOMLEFT" then
 		newDisplayEvent.positionX = 0
-	elseif (anchorPoint == "BOTTOM") then
+	elseif anchorPoint == "BOTTOM" then
 		newDisplayEvent.positionX = newDisplayEvent.scrollWidth / 2
-	elseif (anchorPoint == "BOTTOMRIGHT") then
+	elseif anchorPoint == "BOTTOMRIGHT" then
 		newDisplayEvent.positionX = newDisplayEvent.scrollWidth
 	end
 
@@ -779,16 +793,18 @@ local function InitStatic(newDisplayEvent, activeDisplayEvents, direction, behav
 	local positionY
 
 	-- Static display is growing downwards.
-	if (direction == "Down") then
+	if direction == "Down" then
 		positionY = newDisplayEvent.scrollHeight
 
 		-- Offset the new display event correctly if there are already animating events.
-		if (numActiveAnimations > 0) then
+		if numActiveAnimations > 0 then
 			-- Set the next y position to after the last display event.
 			positionY = activeDisplayEvents[numActiveAnimations].positionY - newDisplayEvent.fontSize - MIN_VERTICAL_SPACING
 
 			-- Wrap the y position if it is outside the scroll area's height.
-			if (positionY < 0) then positionY = newDisplayEvent.scrollHeight end
+			if positionY < 0 then
+				positionY = newDisplayEvent.scrollHeight
+			end
 		end
 
 	-- Static display is growing upwards.
@@ -796,18 +812,20 @@ local function InitStatic(newDisplayEvent, activeDisplayEvents, direction, behav
 		positionY = 0
 
 		-- Offset the new display event correctly if there are already animating events.
-		if (numActiveAnimations > 0) then
+		if numActiveAnimations > 0 then
 			-- Set the next y position to before the last display event.
 			positionY = activeDisplayEvents[numActiveAnimations].positionY + newDisplayEvent.fontSize + MIN_VERTICAL_SPACING
 
 			-- Wrap the y position if it is outside the scroll area's height.
-			if (positionY > newDisplayEvent.scrollHeight) then positionY = 0 end
+			if positionY > newDisplayEvent.scrollHeight then
+				positionY = 0
+			end
 		end
 	end
 
 
 	-- Check if there are already animating events.
-	if (numActiveAnimations > 0) then
+	if numActiveAnimations > 0 then
 		-- Get the top and bottom points of the new display event.
 		local topNew = positionY + newDisplayEvent.fontSize
 		local bottomNew = positionY
@@ -821,7 +839,7 @@ local function InitStatic(newDisplayEvent, activeDisplayEvents, direction, behav
 			topOld = bottomOld + oldDisplayEvent.fontSize
 
 			-- Force the old animation to complete if the new display event is overlapping it.
-			if ((topNew >= bottomOld and topNew <= topOld) or (bottomNew >= bottomOld and bottomNew <= topOld)) then
+			if (topNew >= bottomOld and topNew <= topOld) or (bottomNew >= bottomOld and bottomNew <= topOld) then
 				oldDisplayEvent.elapsedTime = oldDisplayEvent.scrollTime
 			end
 		end

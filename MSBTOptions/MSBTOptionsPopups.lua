@@ -32,7 +32,8 @@ local ConvertType = MSBTTriggers.ConvertType
 local fonts = MSBTMedia.fonts
 local sounds = MSBTMedia.sounds
 
-local IsWrathClassic = WOW_PROJECT_ID == WOW_PROJECT_WRATH_CLASSIC
+local IsClassic = WOW_PROJECT_ID >= WOW_PROJECT_CLASSIC
+local IsCataClassic = WOW_PROJECT_ID == WOW_PROJECT_CATACLYSM_CLASSIC
 local IsVanillaClassic = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
 
 
@@ -91,7 +92,7 @@ local tempConfig = {}
 -- ****************************************************************************
 local function PairsByKeys(t)
 	local temp = {}
-	for k in pairs(t) do temp[#temp+1] = k end
+	for k in pairs(t) do temp[#temp + 1] = k end
 	table.sort(temp)
 
 	local position = 0
@@ -282,11 +283,9 @@ local function CreateInput()
 	local editbox = MSBTControls.CreateEditbox(frame)
 	editbox:SetPoint("TOPLEFT", frame, "TOPLEFT", 20, -25)
 	editbox:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -20, -25)
-	editbox:SetEscapeHandler(
-		function (this)
-			frame:Hide()
-		end
-	)
+	editbox:SetEscapeHandler(function(this)
+		frame:Hide()
+	end)
 	editbox:SetEnterHandler(SaveInput)
 	editbox:SetTextChangedHandler(ValidateInput)
 	frame.inputEditbox = editbox
@@ -295,11 +294,9 @@ local function CreateInput()
 	editbox = MSBTControls.CreateEditbox(frame)
 	editbox:SetPoint("TOPLEFT", frame.inputEditbox, "BOTTOMLEFT", 0, -10)
 	editbox:SetPoint("TOPRIGHT", frame.inputEditbox, "BOTTOMRIGHT", 0, -10)
-	editbox:SetEscapeHandler(
-		function (this)
-			frame:Hide()
-		end
-	)
+	editbox:SetEscapeHandler(function(this)
+		frame:Hide()
+	end)
 	editbox:SetEnterHandler(SaveInput)
 	editbox:SetTextChangedHandler(ValidateInput)
 	frame.secondInputEditbox = editbox
@@ -318,11 +315,9 @@ local function CreateInput()
 	objLocale = L.BUTTONS["inputCancel"]
 	button:Configure(20, objLocale.label, objLocale.tooltip)
 	button:SetPoint("BOTTOMLEFT", frame, "BOTTOM", 10, 40)
-	button:SetClickHandler(
-		function (this)
-			frame:Hide()
-		end
-	)
+	button:SetClickHandler(function(this)
+		frame:Hide()
+	end)
 
 	-- Validation text.
 	local fontString = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
@@ -405,24 +400,20 @@ local function CreateAcknowledge()
 	local button = MSBTControls.CreateOptionButton(frame)
 	button:Configure(20, YES, nil)
 	button:SetPoint("BOTTOMRIGHT", frame, "BOTTOM", -10, 15)
-	button:SetClickHandler(
-		function (this)
-			if (frame.acknowledgeHandler) then
-				frame.acknowledgeHandler(frame.saveArg1)
-				frame:Hide()
-			end
+	button:SetClickHandler(function(this)
+		if (frame.acknowledgeHandler) then
+			frame.acknowledgeHandler(frame.saveArg1)
+			frame:Hide()
 		end
-	)
+	end)
 
 	-- No button.
 	button = MSBTControls.CreateOptionButton(frame)
 	button:Configure(20, NO, nil)
 	button:SetPoint("BOTTOMLEFT", frame, "BOTTOM", 10, 15)
-	button:SetClickHandler(
-		function (this)
-			frame:Hide()
-		end
-	)
+	button:SetClickHandler(function(this)
+		frame:Hide()
+	end)
 
 	return frame
 end
@@ -549,11 +540,9 @@ local function CreateFontPopup()
 	dropdown:Configure(150, objLocale.label, objLocale.tooltip)
 	dropdown:SetListboxHeight(200)
 	dropdown:SetPoint("TOPLEFT")
-	dropdown:SetChangeHandler(
-		function (this, id)
-					UpdateFontPreviews()
-		end
-	)
+	dropdown:SetChangeHandler(function(this, id)
+		UpdateFontPreviews()
+	end)
 	frame.normalFontDropdown = dropdown
 
 	-- Normal outline dropdown.
@@ -561,11 +550,9 @@ local function CreateFontPopup()
 	objLocale = L.DROPDOWNS["normalOutline"]
 	dropdown:Configure(150, objLocale.label, objLocale.tooltip)
 	dropdown:SetPoint("TOPLEFT", frame.normalFontDropdown, "BOTTOMLEFT", 0, -20)
-	dropdown:SetChangeHandler(
-		function (this, id)
-					UpdateFontPreviews()
-		end
-	)
+	dropdown:SetChangeHandler(function(this, id)
+		UpdateFontPreviews()
+	end	)
 	for outlineIndex, outlineName in ipairs(L.OUTLINES) do
 		dropdown:AddItem(outlineName, outlineIndex)
 	end
@@ -578,11 +565,9 @@ local function CreateFontPopup()
 	slider:SetPoint("TOPLEFT", frame.normalOutlineDropdown, "BOTTOMLEFT", 0, -30)
 	slider:SetMinMaxValues(4, 38)
 	slider:SetValueStep(1)
-	slider:SetValueChangedHandler(
-		function(this, value)
-				UpdateFontPreviews()
-		end
-	)
+	slider:SetValueChangedHandler(function(this, value)
+		UpdateFontPreviews()
+	end)
 	frame.normalFontSizeSlider = slider
 
 	-- Normal font opacity slider.
@@ -592,11 +577,9 @@ local function CreateFontPopup()
 	slider:SetPoint("TOPLEFT", frame.normalFontSizeSlider, "BOTTOMLEFT", 0, -10)
 	slider:SetMinMaxValues(1, 100)
 	slider:SetValueStep(1)
-	slider:SetValueChangedHandler(
-		function(this, value)
-				UpdateFontPreviews()
-		end
-	)
+	slider:SetValueChangedHandler(function(this, value)
+		UpdateFontPreviews()
+	end)
 	frame.normalFontOpacitySlider = slider
 
 	-- Normal preview.
@@ -619,48 +602,40 @@ local function CreateFontPopup()
 	objLocale = L.CHECKBOXES["inheritField"]
 	checkbox:Configure(20, nil, objLocale.tooltip)
 	checkbox:SetPoint("BOTTOMLEFT", frame.normalFontDropdown, "BOTTOMRIGHT", 10, 0)
-	checkbox:SetClickHandler(
-		function (this, isChecked)
-			ToggleDropdownInheritState(frame.normalFontDropdown, isChecked, frame.inheritedNormalFontName)
-			UpdateFontPreviews()
-		end
-	)
+	checkbox:SetClickHandler(function(this, isChecked)
+		ToggleDropdownInheritState(frame.normalFontDropdown, isChecked, frame.inheritedNormalFontName)
+		UpdateFontPreviews()
+	end)
 	frame.normalFontCheckbox = checkbox
 
 	-- Inherit normal outline index checkbox.
 	checkbox = MSBTControls.CreateCheckbox(normalInheritFrame)
 	checkbox:Configure(20, nil, objLocale.tooltip)
 	checkbox:SetPoint("BOTTOMLEFT", frame.normalOutlineDropdown, "BOTTOMRIGHT", 10, 0)
-	checkbox:SetClickHandler(
-		function (this, isChecked)
-			ToggleDropdownInheritState(frame.normalOutlineDropdown, isChecked, frame.inheritedNormalOutlineIndex)
-			UpdateFontPreviews()
-		end
-	)
+	checkbox:SetClickHandler(function(this, isChecked)
+		ToggleDropdownInheritState(frame.normalOutlineDropdown, isChecked, frame.inheritedNormalOutlineIndex)
+		UpdateFontPreviews()
+	end)
 	frame.normalOutlineCheckbox = checkbox
 
 	-- Inherit normal font size checkbox.
 	checkbox = MSBTControls.CreateCheckbox(normalInheritFrame)
 	checkbox:Configure(20, nil, objLocale.tooltip)
 	checkbox:SetPoint("BOTTOMLEFT", frame.normalFontSizeSlider, "BOTTOMRIGHT", 10, 5)
-	checkbox:SetClickHandler(
-		function (this, isChecked)
-			ToggleSliderInheritState(frame.normalFontSizeSlider, isChecked, frame.inheritedNormalFontSize)
-			UpdateFontPreviews()
-		end
-	)
+	checkbox:SetClickHandler(function(this, isChecked)
+		ToggleSliderInheritState(frame.normalFontSizeSlider, isChecked, frame.inheritedNormalFontSize)
+		UpdateFontPreviews()
+	end)
 	frame.normalFontSizeCheckbox = checkbox
 
 	-- Inherit normal font opacity checkbox.
 	checkbox = MSBTControls.CreateCheckbox(normalInheritFrame)
 	checkbox:Configure(20, nil, objLocale.tooltip)
 	checkbox:SetPoint("BOTTOMLEFT", frame.normalFontOpacitySlider, "BOTTOMRIGHT", 10, 5)
-	checkbox:SetClickHandler(
-		function (this, isChecked)
-			ToggleSliderInheritState(frame.normalFontOpacitySlider, isChecked, frame.inheritedNormalFontAlpha)
-			UpdateFontPreviews()
-		end
-	)
+	checkbox:SetClickHandler(function(this, isChecked)
+		ToggleSliderInheritState(frame.normalFontOpacitySlider, isChecked, frame.inheritedNormalFontAlpha)
+		UpdateFontPreviews()
+	end)
 	frame.normalFontOpacityCheckbox = checkbox
 
 	-- Inherit normal column label.
@@ -692,11 +667,9 @@ local function CreateFontPopup()
 	dropdown:Configure(150, objLocale.label, objLocale.tooltip)
 	dropdown:SetListboxHeight(200)
 	dropdown:SetPoint("TOPLEFT")
-	dropdown:SetChangeHandler(
-		function (this, id)
-					UpdateFontPreviews()
-		end
-	)
+	dropdown:SetChangeHandler(function(this, id)
+		UpdateFontPreviews()
+	end)
 	frame.critFontDropdown = dropdown
 
 	-- Crit outline dropdown.
@@ -704,11 +677,9 @@ local function CreateFontPopup()
 	objLocale = L.DROPDOWNS["critOutline"]
 	dropdown:Configure(150, objLocale.label, objLocale.tooltip)
 	dropdown:SetPoint("TOPLEFT", frame.critFontDropdown, "BOTTOMLEFT", 0, -20)
-	dropdown:SetChangeHandler(
-		function (this, id)
-					UpdateFontPreviews()
-		end
-	)
+	dropdown:SetChangeHandler(function(this, id)
+		UpdateFontPreviews()
+	end)
 	for outlineIndex, outlineName in ipairs(L.OUTLINES) do
 		dropdown:AddItem(outlineName, outlineIndex)
 	end
@@ -721,11 +692,9 @@ local function CreateFontPopup()
 	slider:SetPoint("TOPLEFT", frame.critOutlineDropdown, "BOTTOMLEFT", 0, -30)
 	slider:SetMinMaxValues(4, 38)
 	slider:SetValueStep(1)
-	slider:SetValueChangedHandler(
-		function(this, value)
-				UpdateFontPreviews()
-		end
-	)
+	slider:SetValueChangedHandler(function(this, value)
+		UpdateFontPreviews()
+	end)
 	frame.critFontSizeSlider = slider
 
 	-- Crit font opacity slider.
@@ -735,11 +704,9 @@ local function CreateFontPopup()
 	slider:SetPoint("TOPLEFT", frame.critFontSizeSlider, "BOTTOMLEFT", 0, -10)
 	slider:SetMinMaxValues(1, 100)
 	slider:SetValueStep(1)
-	slider:SetValueChangedHandler(
-		function(this, value)
-			UpdateFontPreviews()
-		end
-	)
+	slider:SetValueChangedHandler(function(this, value)
+		UpdateFontPreviews()
+	end)
 	frame.critFontOpacitySlider = slider
 
 	-- Crit Preview.
@@ -763,48 +730,40 @@ local function CreateFontPopup()
 	objLocale = L.CHECKBOXES["inheritField"]
 	checkbox:Configure(20, nil, objLocale.tooltip)
 	checkbox:SetPoint("BOTTOMLEFT", frame.critFontDropdown, "BOTTOMRIGHT", 10, 0)
-	checkbox:SetClickHandler(
-		function (this, isChecked)
-			ToggleDropdownInheritState(frame.critFontDropdown, isChecked, frame.inheritedCritFontName)
-			UpdateFontPreviews()
-		end
-	)
+	checkbox:SetClickHandler(function(this, isChecked)
+		ToggleDropdownInheritState(frame.critFontDropdown, isChecked, frame.inheritedCritFontName)
+		UpdateFontPreviews()
+	end)
 	frame.critFontCheckbox = checkbox
 
 	-- Inherit crit outline index checkbox.
 	checkbox = MSBTControls.CreateCheckbox(critInheritFrame)
 	checkbox:Configure(20, nil, objLocale.tooltip)
 	checkbox:SetPoint("BOTTOMLEFT", frame.critOutlineDropdown, "BOTTOMRIGHT", 10, 0)
-	checkbox:SetClickHandler(
-		function (this, isChecked)
-			ToggleDropdownInheritState(frame.critOutlineDropdown, isChecked, frame.inheritedCritOutlineIndex)
-			UpdateFontPreviews()
-		end
-	)
+	checkbox:SetClickHandler(function(this, isChecked)
+		ToggleDropdownInheritState(frame.critOutlineDropdown, isChecked, frame.inheritedCritOutlineIndex)
+		UpdateFontPreviews()
+	end)
 	frame.critOutlineCheckbox = checkbox
 
 	-- Inherit crit font size checkbox.
 	checkbox = MSBTControls.CreateCheckbox(critInheritFrame)
 	checkbox:Configure(20, nil, objLocale.tooltip)
 	checkbox:SetPoint("BOTTOMLEFT", frame.critFontSizeSlider, "BOTTOMRIGHT", 10, 5)
-	checkbox:SetClickHandler(
-		function (this, isChecked)
-			ToggleSliderInheritState(frame.critFontSizeSlider, isChecked, frame.inheritedCritFontSize)
-			UpdateFontPreviews()
-		end
-	)
+	checkbox:SetClickHandler(function(this, isChecked)
+		ToggleSliderInheritState(frame.critFontSizeSlider, isChecked, frame.inheritedCritFontSize)
+		UpdateFontPreviews()
+	end)
 	frame.critFontSizeCheckbox = checkbox
 
 	-- Inherit crit font opacity checkbox.
 	checkbox = MSBTControls.CreateCheckbox(critInheritFrame)
 	checkbox:Configure(20, nil, objLocale.tooltip)
 	checkbox:SetPoint("BOTTOMLEFT", frame.critFontOpacitySlider, "BOTTOMRIGHT", 10, 5)
-	checkbox:SetClickHandler(
-		function (this, isChecked)
-			ToggleSliderInheritState(frame.critFontOpacitySlider, isChecked, frame.inheritedCritFontAlpha)
-			UpdateFontPreviews()
-		end
-	)
+	checkbox:SetClickHandler(function(this, isChecked)
+		ToggleSliderInheritState(frame.critFontOpacitySlider, isChecked, frame.inheritedCritFontAlpha)
+		UpdateFontPreviews()
+	end)
 	frame.critFontOpacityCheckbox = checkbox
 
 	-- Inherit normal column label.
@@ -817,24 +776,22 @@ local function CreateFontPopup()
 	objLocale = L.BUTTONS["genericSave"]
 	button:Configure(20, objLocale.label, objLocale.tooltip)
 	button:SetPoint("BOTTOMRIGHT", frame, "BOTTOM", -10, 20)
-	button:SetClickHandler(
-		function (this)
-			UpdateFontSettings()
-			frame:Hide()
-			if (frame.saveHandler) then frame.saveHandler(returnSettings, frame.saveArg1) end
+	button:SetClickHandler(function(this)
+		UpdateFontSettings()
+		frame:Hide()
+		if frame.saveHandler then
+			frame.saveHandler(returnSettings, frame.saveArg1)
 		end
-	)
+	end)
 
 	-- Cancel button.
 	button = MSBTControls.CreateOptionButton(frame)
 	objLocale = L.BUTTONS["genericCancel"]
 	button:Configure(20, objLocale.label, objLocale.tooltip)
 	button:SetPoint("BOTTOMLEFT", frame, "BOTTOM", 10, 20)
-	button:SetClickHandler(
-		function (this)
-			frame:Hide()
-		end
-	)
+	button:SetClickHandler(function(this)
+		frame:Hide()
+	end)
 
 
 	-- Register the frame with the main module.
@@ -985,11 +942,9 @@ local function CreatePartialEffects()
 	local objLocale = L.CHECKBOXES["colorPartialEffects"]
 	checkbox:Configure(24, objLocale.label, objLocale.tooltip)
 	checkbox:SetPoint("TOPLEFT", frame, "TOPLEFT", 20, -20)
-	checkbox:SetClickHandler(
-		function (this, isChecked)
-			MSBTProfiles.SetOption(nil, "partialColoringDisabled", not isChecked)
-		end
-	)
+	checkbox:SetClickHandler(function(this, isChecked)
+		MSBTProfiles.SetOption(nil, "partialColoringDisabled", not isChecked)
+	end)
 	frame.colorCheckbox = checkbox
 
 
@@ -1000,23 +955,19 @@ local function CreatePartialEffects()
 	for effectType in string.gmatch("crushing glancing absorb block resist overheal overkill", "[^%s]+") do
 		colorswatch = MSBTControls.CreateColorswatch(frame)
 		colorswatch:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", anchor == checkbox and 20 or 0, -10)
-		colorswatch:SetColorChangedHandler(
-			function (this)
-				MSBTProfiles.SetOption(effectType, "colorR", this.r)
-				MSBTProfiles.SetOption(effectType, "colorG", this.g)
-				MSBTProfiles.SetOption(effectType, "colorB", this.b)
-			end
-		)
+		colorswatch:SetColorChangedHandler(function(this)
+			MSBTProfiles.SetOption(effectType, "colorR", this.r)
+			MSBTProfiles.SetOption(effectType, "colorG", this.g)
+			MSBTProfiles.SetOption(effectType, "colorB", this.b)
+		end)
 
 		checkbox = MSBTControls.CreateCheckbox(frame)
 		objLocale = L.CHECKBOXES[effectType]
 		checkbox:Configure(24, objLocale.label, objLocale.tooltip)
 		checkbox:SetPoint("LEFT", colorswatch, "RIGHT", 5, 0)
-		checkbox:SetClickHandler(
-			function (this, isChecked)
-				MSBTProfiles.SetOption(effectType, "disabled", not isChecked)
-			end
-		)
+		checkbox:SetClickHandler(function(this, isChecked)
+			MSBTProfiles.SetOption(effectType, "disabled", not isChecked)
+		end)
 
 		if (checkbox:GetWidth() > maxWidth) then maxWidth = checkbox:GetWidth() end
 
@@ -1026,11 +977,9 @@ local function CreatePartialEffects()
 		editbox:Configure(130, nil, tooltip)
 		editbox:SetPoint("RIGHT", frame, "RIGHT", -20, 0)
 		editbox:SetPoint("TOP", checkbox, "TOP", 0, 10)
-		editbox:SetTextChangedHandler(
-			function (this)
-				MSBTProfiles.SetOption(effectType, "trailer", this:GetText())
-			end
-		)
+		editbox:SetTextChangedHandler(function(this)
+			MSBTProfiles.SetOption(effectType, "trailer", this:GetText())
+		end)
 		frame[effectType .. "Colorswatch"] = colorswatch
 		frame[effectType .. "Checkbox"] = checkbox
 		frame[effectType .. "Editbox"] = editbox
@@ -1091,11 +1040,11 @@ local function CreateDamageColors()
 	frame:SetSize(300, 300)
 
 	local scrollFrame = CreateFrame("ScrollFrame", nil, frame, "UIPanelScrollFrameTemplate")
-	scrollFrame:SetSize(200, 240) 
-	scrollFrame:SetPoint("TOP", 0, -40) 
+	scrollFrame:SetSize(230, 240)
+	scrollFrame:SetPoint("TOP", 0, -40)
 
 	local content = CreateFrame("Frame", nil, scrollFrame)
-	content:SetSize(10, 5) 
+	content:SetSize(10, 5)
 	scrollFrame:SetScrollChild(content)
 
 	-- Close button.
@@ -1103,15 +1052,13 @@ local function CreateDamageColors()
 	button:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -2, -2)
 
 	-- Color damage amounts.
-	local checkbox = MSBTControls.CreateCheckbox(scrollFrame)
+	local checkbox = MSBTControls.CreateCheckbox(frame)
 	local objLocale = L.CHECKBOXES["colorDamageAmounts"]
 	checkbox:Configure(24, objLocale.label, objLocale.tooltip)
 	checkbox:SetPoint("TOPLEFT", frame, "TOPLEFT", 20, -20)
-	checkbox:SetClickHandler(
-		function (this, isChecked)
-			MSBTProfiles.SetOption(nil, "damageColoringDisabled", not isChecked)
-		end
-	)
+	checkbox:SetClickHandler(function(this, isChecked)
+		MSBTProfiles.SetOption(nil, "damageColoringDisabled", not isChecked)
+	end)
 	frame.colorCheckbox = checkbox
 
 
@@ -1122,22 +1069,18 @@ local function CreateDamageColors()
 	for damageType, profileKey in pairs(MSBTMain.damageColorProfileEntries) do
 		colorswatch = MSBTControls.CreateColorswatch(content)
 		colorswatch:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", anchor == content and 20 or 0, anchor == content and -10 or -5)
-		colorswatch:SetColorChangedHandler(
-			function (this)
-				MSBTProfiles.SetOption(profileKey, "colorR", this.r)
-				MSBTProfiles.SetOption(profileKey, "colorG", this.g)
-				MSBTProfiles.SetOption(profileKey, "colorB", this.b)
-			end
-		)
+		colorswatch:SetColorChangedHandler(function(this)
+			MSBTProfiles.SetOption(profileKey, "colorR", this.r)
+			MSBTProfiles.SetOption(profileKey, "colorG", this.g)
+			MSBTProfiles.SetOption(profileKey, "colorB", this.b)
+		end)
 		checkbox = MSBTControls.CreateCheckbox(content)
 		objLocale = L.CHECKBOXES["colorDamageEntry"]
 		checkbox:Configure(24, MSBTMain.damageTypeMap[damageType], objLocale.tooltip)
 		checkbox:SetPoint("LEFT", colorswatch, "RIGHT", 5, 0)
-		checkbox:SetClickHandler(
-			function (this, isChecked)
-				MSBTProfiles.SetOption(profileKey, "disabled", not isChecked)
-			end
-		)
+		checkbox:SetClickHandler(function(this, isChecked)
+			MSBTProfiles.SetOption(profileKey, "disabled", not isChecked)
+		end)
 		frame[profileKey .. "Colorswatch"] = colorswatch
 		frame[profileKey .. "Checkbox"] = checkbox
 
@@ -1187,7 +1130,7 @@ end
 -------------------------------------------------------------------------------
 
 local classString = "DEATHKNIGHT DRUID HUNTER MAGE MONK PALADIN PRIEST ROGUE SHAMAN WARLOCK WARRIOR DEMONHUNTER EVOKER"
-if IsWrathClassic then
+if IsCataClassic then
 	classString = "DEATHKNIGHT DRUID HUNTER MAGE PALADIN PRIEST ROGUE SHAMAN WARLOCK WARRIOR"
 elseif IsVanillaClassic then
 	classString = "DRUID HUNTER MAGE PALADIN PRIEST ROGUE SHAMAN WARLOCK WARRIOR"
@@ -1210,11 +1153,9 @@ local function CreateClassColors()
 	local objLocale = L.CHECKBOXES["colorUnitNames"]
 	checkbox:Configure(24, objLocale.label, objLocale.tooltip)
 	checkbox:SetPoint("TOPLEFT", frame, "TOPLEFT", 20, -20)
-	checkbox:SetClickHandler(
-		function (this, isChecked)
-			MSBTProfiles.SetOption(nil, "classColoringDisabled", not isChecked)
-		end
-	)
+	checkbox:SetClickHandler(function(this, isChecked)
+		MSBTProfiles.SetOption(nil, "classColoringDisabled", not isChecked)
+	end)
 	frame.colorCheckbox = checkbox
 
 
@@ -1225,22 +1166,18 @@ local function CreateClassColors()
 	for class in string.gmatch(classString, "[^%s]+") do
 		colorswatch = MSBTControls.CreateColorswatch(frame)
 		colorswatch:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", anchor == checkbox and 20 or 0, anchor == checkbox and -10 or -5)
-		colorswatch:SetColorChangedHandler(
-			function (this)
-				MSBTProfiles.SetOption(class, "colorR", this.r)
-				MSBTProfiles.SetOption(class, "colorG", this.g)
-				MSBTProfiles.SetOption(class, "colorB", this.b)
-			end
-		)
+		colorswatch:SetColorChangedHandler(function(this)
+			MSBTProfiles.SetOption(class, "colorR", this.r)
+			MSBTProfiles.SetOption(class, "colorG", this.g)
+			MSBTProfiles.SetOption(class, "colorB", this.b)
+		end)
 		checkbox = MSBTControls.CreateCheckbox(frame)
 		objLocale = L.CHECKBOXES["colorClassEntry"]
 		checkbox:Configure(24, CLASS_NAMES[class], objLocale.tooltip)
 		checkbox:SetPoint("LEFT", colorswatch, "RIGHT", 5, 0)
-		checkbox:SetClickHandler(
-			function (this, isChecked)
-				MSBTProfiles.SetOption(class, "disabled", not isChecked)
-			end
-		)
+		checkbox:SetClickHandler(function(this, isChecked)
+			MSBTProfiles.SetOption(class, "disabled", not isChecked)
+		end)
 		frame[class .. "Colorswatch"] = colorswatch
 		frame[class .. "Checkbox"] = checkbox
 
@@ -1628,25 +1565,21 @@ local function CreateScrollAreaConfig()
 	frame:SetWidth(320)
 	frame:SetHeight(575)
 	frame:SetPoint("RIGHT")
-	frame:SetScript("OnHide",
-		function (this)
-			for _, moverFrame in pairs(this.moverFrames) do
-				moverFrame:Hide()
-			end
-			MSBTOptions.Main.ShowMainFrame()
+	frame:SetScript("OnHide", function(this)
+		for _, moverFrame in pairs(this.moverFrames) do
+			moverFrame:Hide()
 		end
-	)
+		MSBTOptions.Main.ShowMainFrame()
+	end)
 
 	-- Scroll area dropdown.
 	local dropdown = MSBTControls.CreateDropdown(frame)
 	local objLocale = L.DROPDOWNS["scrollArea"]
 	dropdown:Configure(200, objLocale.label, objLocale.tooltip)
 	dropdown:SetPoint("TOP", frame, "TOP", 0, -20)
-	dropdown:SetChangeHandler(
-		function (this, id)
-			ChangeConfigScrollArea(id)
-		end
-	)
+	dropdown:SetChangeHandler(function(this, id)
+		ChangeConfigScrollArea(id)
+	end)
 	frame.scrollAreaDropdown = dropdown
 
 
@@ -1664,14 +1597,12 @@ local function CreateScrollAreaConfig()
 	objLocale = L.DROPDOWNS["animationStyle"]
 	dropdown:Configure(135, objLocale.label, objLocale.tooltip)
 	dropdown:SetPoint("TOPLEFT", texture, "BOTTOMLEFT", 5, -15)
-	dropdown:SetChangeHandler(
-		function (this, id)
-			ChangeAnimationStyle(id)
-			frame.previewSettings[frame.currentScrollArea].animationStyle = id
-			frame.previewSettings[frame.currentScrollArea].direction = frame.directionDropdown:GetSelectedID()
-			frame.previewSettings[frame.currentScrollArea].behavior = frame.behaviorDropdown:GetSelectedID()
-		end
-	)
+	dropdown:SetChangeHandler(function(this, id)
+		ChangeAnimationStyle(id)
+		frame.previewSettings[frame.currentScrollArea].animationStyle = id
+		frame.previewSettings[frame.currentScrollArea].direction = frame.directionDropdown:GetSelectedID()
+		frame.previewSettings[frame.currentScrollArea].behavior = frame.behaviorDropdown:GetSelectedID()
+	end)
 	frame.animationStyleDropdown = dropdown
 
 	-- Sticky animation style dropdown.
@@ -1679,14 +1610,12 @@ local function CreateScrollAreaConfig()
 	objLocale = L.DROPDOWNS["stickyAnimationStyle"]
 	dropdown:Configure(135, objLocale.label, objLocale.tooltip)
 	dropdown:SetPoint("LEFT", frame.animationStyleDropdown, "RIGHT", 15, 0)
-	dropdown:SetChangeHandler(
-		function (this, id)
-			ChangeStickyAnimationStyle(id)
-			frame.previewSettings[frame.currentScrollArea].stickyAnimationStyle = id
-			frame.previewSettings[frame.currentScrollArea].stickyDirection = frame.stickyDirectionDropdown:GetSelectedID()
-			frame.previewSettings[frame.currentScrollArea].stickyBehavior = frame.stickyBehaviorDropdown:GetSelectedID()
-		end
-	)
+	dropdown:SetChangeHandler(function(this, id)
+		ChangeStickyAnimationStyle(id)
+		frame.previewSettings[frame.currentScrollArea].stickyAnimationStyle = id
+		frame.previewSettings[frame.currentScrollArea].stickyDirection = frame.stickyDirectionDropdown:GetSelectedID()
+		frame.previewSettings[frame.currentScrollArea].stickyBehavior = frame.stickyBehaviorDropdown:GetSelectedID()
+	end)
 	frame.stickyAnimationStyleDropdown = dropdown
 
 	-- Normal direction dropdown.
@@ -1694,11 +1623,9 @@ local function CreateScrollAreaConfig()
 	objLocale = L.DROPDOWNS["direction"]
 	dropdown:Configure(135,objLocale.label, objLocale.tooltip)
 	dropdown:SetPoint("TOPLEFT", frame.animationStyleDropdown, "BOTTOMLEFT", 0, -10)
-	dropdown:SetChangeHandler(
-		function (this, id)
-			frame.previewSettings[frame.currentScrollArea].direction = id
-		end
-	)
+	dropdown:SetChangeHandler(function(this, id)
+		frame.previewSettings[frame.currentScrollArea].direction = id
+	end)
 	frame.directionDropdown = dropdown
 
 	-- Sticky direction dropdown.
@@ -1706,11 +1633,9 @@ local function CreateScrollAreaConfig()
 	objLocale = L.DROPDOWNS["direction"]
 	dropdown:Configure(135, objLocale.label, objLocale.tooltip)
 	dropdown:SetPoint("TOPLEFT", frame.stickyAnimationStyleDropdown, "BOTTOMLEFT", 0, -10)
-	dropdown:SetChangeHandler(
-		function (this, id)
-			frame.previewSettings[frame.scrollAreaDropdown:GetSelectedID()].stickyDirection = id
-		end
-	)
+	dropdown:SetChangeHandler(function(this, id)
+		frame.previewSettings[frame.scrollAreaDropdown:GetSelectedID()].stickyDirection = id
+	end)
 	frame.stickyDirectionDropdown = dropdown
 
 	-- Normal behavior dropdown.
@@ -1718,11 +1643,9 @@ local function CreateScrollAreaConfig()
 	objLocale = L.DROPDOWNS["behavior"]
 	dropdown:Configure(135, objLocale.label, objLocale.tooltip)
 	dropdown:SetPoint("TOPLEFT", frame.directionDropdown, "BOTTOMLEFT", 0, -10)
-		dropdown:SetChangeHandler(
-		function (this, id)
-			frame.previewSettings[frame.currentScrollArea].behavior = id
-		end
-	)
+	dropdown:SetChangeHandler(function(this, id)
+		frame.previewSettings[frame.currentScrollArea].behavior = id
+	end)
 	frame.behaviorDropdown = dropdown
 
 	-- Sticky behavior dropdown.
@@ -1730,11 +1653,9 @@ local function CreateScrollAreaConfig()
 	objLocale = L.DROPDOWNS["behavior"]
 	dropdown:Configure(135, objLocale.label, objLocale.tooltip)
 	dropdown:SetPoint("TOPLEFT", frame.stickyDirectionDropdown, "BOTTOMLEFT", 0, -10)
-	dropdown:SetChangeHandler(
-		function (this, id)
-			frame.previewSettings[frame.currentScrollArea].stickyBehavior = id
-		end
-	)
+	dropdown:SetChangeHandler(function(this, id)
+		frame.previewSettings[frame.currentScrollArea].stickyBehavior = id
+	end)
 	frame.stickyBehaviorDropdown = dropdown
 
 	-- Normal text align dropdown.
@@ -1742,11 +1663,9 @@ local function CreateScrollAreaConfig()
 	objLocale = L.DROPDOWNS["textAlign"]
 	dropdown:Configure(135, objLocale.label, objLocale.tooltip)
 	dropdown:SetPoint("TOPLEFT", frame.behaviorDropdown, "BOTTOMLEFT", 0, -10)
-	dropdown:SetChangeHandler(
-		function (this, id)
-			frame.previewSettings[frame.currentScrollArea].textAlignIndex = id
-		end
-	)
+	dropdown:SetChangeHandler(function(this, id)
+		frame.previewSettings[frame.currentScrollArea].textAlignIndex = id
+	end)
 	for index, anchorPoint in ipairs(L.TEXT_ALIGNS) do
 		dropdown:AddItem(anchorPoint, index)
 	end
@@ -1757,11 +1676,9 @@ local function CreateScrollAreaConfig()
 	objLocale = L.DROPDOWNS["textAlign"]
 	dropdown:Configure(135, objLocale.label, objLocale.tooltip)
 	dropdown:SetPoint("TOPLEFT", frame.stickyBehaviorDropdown, "BOTTOMLEFT", 0, -10)
-	dropdown:SetChangeHandler(
-		function (this, id)
-			frame.previewSettings[frame.currentScrollArea].stickyTextAlignIndex = id
-		end
-	)
+	dropdown:SetChangeHandler(function(this, id)
+		frame.previewSettings[frame.currentScrollArea].stickyTextAlignIndex = id
+	end)
 	for index, anchorPoint in ipairs(L.TEXT_ALIGNS) do
 		dropdown:AddItem(anchorPoint, index)
 	end
@@ -1784,12 +1701,10 @@ local function CreateScrollAreaConfig()
 	slider:SetPoint("TOPLEFT", texture, "BOTTOMLEFT", 5, -15)
 	slider:SetMinMaxValues(50, 600)
 	slider:SetValueStep(5)
-	slider:SetValueChangedHandler(
-		function(this, value)
-			frame.previewSettings[frame.currentScrollArea].scrollHeight = value
-			RepositionScrollAreaMoverFrame(frame.currentScrollArea)
-		end
-	)
+	slider:SetValueChangedHandler(function(this, value)
+		frame.previewSettings[frame.currentScrollArea].scrollHeight = value
+		RepositionScrollAreaMoverFrame(frame.currentScrollArea)
+	end)
 	frame.scrollHeightSlider = slider
 
 	-- Scroll width slider.
@@ -1799,12 +1714,10 @@ local function CreateScrollAreaConfig()
 	slider:SetPoint("LEFT", frame.scrollHeightSlider, "RIGHT", 15, 0)
 	slider:SetMinMaxValues(10, 800)
 	slider:SetValueStep(10)
-	slider:SetValueChangedHandler(
-		function(this, value)
-			frame.previewSettings[frame.currentScrollArea].scrollWidth = value
-			RepositionScrollAreaMoverFrame(frame.currentScrollArea)
-		end
-	)
+	slider:SetValueChangedHandler(function(this, value)
+		frame.previewSettings[frame.currentScrollArea].scrollWidth = value
+		RepositionScrollAreaMoverFrame(frame.currentScrollArea)
+	end)
 	frame.scrollWidthSlider = slider
 
 	-- Animation speed slider.
@@ -1814,11 +1727,9 @@ local function CreateScrollAreaConfig()
 	slider:SetPoint("TOPLEFT", frame.scrollHeightSlider, "BOTTOMLEFT", 0, -10)
 	slider:SetMinMaxValues(20, 250)
 	slider:SetValueStep(10)
-	slider:SetValueChangedHandler(
-		function(this, value)
-			frame.previewSettings[frame.currentScrollArea].animationSpeed = value
-		end
-	)
+	slider:SetValueChangedHandler(function(this, value)
+		frame.previewSettings[frame.currentScrollArea].animationSpeed = value
+	end)
 	frame.animationSpeedSlider = slider
 
 	-- Inherit animation speed checkbox.
@@ -1826,11 +1737,9 @@ local function CreateScrollAreaConfig()
 	objLocale = L.CHECKBOXES["inheritField"]
 	checkbox:Configure(20, objLocale.label, objLocale.tooltip)
 	checkbox:SetPoint("BOTTOMLEFT", frame.animationSpeedSlider, "BOTTOMRIGHT", 10, 5)
-	checkbox:SetClickHandler(
-		function (this, isChecked)
-			ToggleSliderInheritState(frame.animationSpeedSlider, isChecked, frame.previewSettings[frame.currentScrollArea].inheritedAnimationSpeed)
-		end
-	)
+	checkbox:SetClickHandler(function(this, isChecked)
+		ToggleSliderInheritState(frame.animationSpeedSlider, isChecked, frame.previewSettings[frame.currentScrollArea].inheritedAnimationSpeed)
+	end)
 	frame.animationSpeedCheckbox = checkbox
 
 
@@ -1839,15 +1748,13 @@ local function CreateScrollAreaConfig()
 	objLocale = L.EDITBOXES["xOffset"]
 	editbox:Configure(135, objLocale.label, objLocale.tooltip)
 	editbox:SetPoint("TOPLEFT", frame.animationSpeedSlider, "BOTTOMLEFT", 0, -10)
-	editbox:SetTextChangedHandler(
-		function (this)
-			local newOffset = tonumber(this:GetText())
-			if (newOffset) then
-				frame.previewSettings[frame.currentScrollArea].offsetX = newOffset
-				RepositionScrollAreaMoverFrame(frame.currentScrollArea)
-			end
+	editbox:SetTextChangedHandler(function(this)
+		local newOffset = tonumber(this:GetText())
+		if newOffset then
+			frame.previewSettings[frame.currentScrollArea].offsetX = newOffset
+			RepositionScrollAreaMoverFrame(frame.currentScrollArea)
 		end
-	)
+	end)
 	frame.xOffsetEditbox = editbox
 
 
@@ -1856,15 +1763,13 @@ local function CreateScrollAreaConfig()
 	objLocale = L.EDITBOXES["yOffset"]
 	editbox:Configure(135, objLocale.label, objLocale.tooltip)
 	editbox:SetPoint("LEFT", frame.xOffsetEditbox, "RIGHT", 15, 0)
-	editbox:SetTextChangedHandler(
-		function (this)
-			local newOffset = tonumber(this:GetText())
-			if (newOffset) then
-				frame.previewSettings[frame.currentScrollArea].offsetY = newOffset
-				RepositionScrollAreaMoverFrame(frame.currentScrollArea)
-			end
+	editbox:SetTextChangedHandler(function(this)
+		local newOffset = tonumber(this:GetText())
+		if newOffset then
+			frame.previewSettings[frame.currentScrollArea].offsetY = newOffset
+			RepositionScrollAreaMoverFrame(frame.currentScrollArea)
 		end
-	)
+	end)
 	frame.yOffsetEditbox = editbox
 
 
@@ -1873,11 +1778,9 @@ local function CreateScrollAreaConfig()
 	objLocale = L.DROPDOWNS["iconAlign"]
 	dropdown:Configure(135, objLocale.label, objLocale.tooltip)
 	dropdown:SetPoint("TOPLEFT", frame.xOffsetEditbox, "BOTTOMLEFT", 0, -10)
-	dropdown:SetChangeHandler(
-		function (this, id)
-			frame.previewSettings[frame.currentScrollArea].iconAlign = id
-		end
-	)
+	dropdown:SetChangeHandler(function(this, id)
+		frame.previewSettings[frame.currentScrollArea].iconAlign = id
+	end)
 	dropdown:AddItem(L.TEXT_ALIGNS[1], "Left")
 	dropdown:AddItem(L.TEXT_ALIGNS[3], "Right")
 	frame.iconAlignDropdown = dropdown
@@ -1887,11 +1790,9 @@ local function CreateScrollAreaConfig()
 	objLocale = L.CHECKBOXES["hideSkillIcons"]
 	checkbox:Configure(20, objLocale.label, objLocale.tooltip)
 	checkbox:SetPoint("LEFT", frame.iconAlignDropdown, "RIGHT", 10, -5)
-	checkbox:SetClickHandler(
-		function (this, isChecked)
-			frame.previewSettings[frame.currentScrollArea].skillIconsDisabled = isChecked
-		end
-	)
+	checkbox:SetClickHandler(function(this, isChecked)
+		frame.previewSettings[frame.currentScrollArea].skillIconsDisabled = isChecked
+	end)
 	frame.iconsDisabledCheckbox = checkbox
 
 	-- Bottom horizontal bar.
@@ -1908,42 +1809,36 @@ local function CreateScrollAreaConfig()
 	objLocale = L.BUTTONS["scrollAreasPreview"]
 	button:Configure(20, objLocale.label, objLocale.tooltip)
 	button:SetPoint("BOTTOM", frame, "BOTTOM", 0, 50)
-	button:SetClickHandler(
-		function (this)
-			SaveScrollAreaSettings(frame.previewSettings)
-			local name
-			for saKey in pairs(frame.previewSettings) do
-				name = MSBTAnimations.scrollAreas[saKey].name
-				MikSBT.DisplayMessage(name, saKey, nil, 255, 0, 0, nil, nil, nil, PREVIEW_ICON_PATH)
-				MikSBT.DisplayMessage(name, saKey, nil, 255, 255, 255, nil, nil, nil, PREVIEW_ICON_PATH)
-				MikSBT.DisplayMessage(name, saKey, true, 0, 0, 255, 28, nil, nil, PREVIEW_ICON_PATH)
-			end
+	button:SetClickHandler(function(this)
+		SaveScrollAreaSettings(frame.previewSettings)
+		local name
+		for saKey in pairs(frame.previewSettings) do
+			name = MSBTAnimations.scrollAreas[saKey].name
+			MikSBT.DisplayMessage(name, saKey, nil, 255, 0, 0, nil, nil, nil, PREVIEW_ICON_PATH)
+			MikSBT.DisplayMessage(name, saKey, nil, 255, 255, 255, nil, nil, nil, PREVIEW_ICON_PATH)
+			MikSBT.DisplayMessage(name, saKey, true, 0, 0, 255, 28, nil, nil, PREVIEW_ICON_PATH)
 		end
-	)
+	end)
 
 	-- Save button.
 	local button = MSBTControls.CreateOptionButton(frame)
 	objLocale = L.BUTTONS["genericSave"]
 	button:Configure(20, objLocale.label, objLocale.tooltip)
 	button:SetPoint("BOTTOMRIGHT", frame, "BOTTOM", -10, 20)
-	button:SetClickHandler(
-		function (this)
-			SaveScrollAreaSettings(frame.previewSettings)
-			frame:Hide()
-		end
-	)
+	button:SetClickHandler(function(this)
+		SaveScrollAreaSettings(frame.previewSettings)
+		frame:Hide()
+	end)
 
 	-- Cancel button.
 	button = MSBTControls.CreateOptionButton(frame)
 	objLocale = L.BUTTONS["genericCancel"]
 	button:Configure(20, objLocale.label, objLocale.tooltip)
 	button:SetPoint("BOTTOMLEFT", frame, "BOTTOM", 10, 20)
-	button:SetClickHandler(
-		function (this)
-			SaveScrollAreaSettings(frame.originalSettings)
-			frame:Hide()
-		end
-	)
+	button:SetClickHandler(function(this)
+		SaveScrollAreaSettings(frame.originalSettings)
+		frame:Hide()
+	end)
 
 	-- Track internal values.
 	frame.moverFrames = {}
@@ -2018,12 +1913,12 @@ local function CreateScrollAreaSelection()
 	local objLocale = L.BUTTONS["inputOkay"]
 	button:Configure(20, objLocale.label, objLocale.tooltip)
 	button:SetPoint("BOTTOMRIGHT", frame, "BOTTOM", -10, 20)
-	button:SetClickHandler(
-		function (this)
-			frame:Hide()
-			if (frame.saveHandler) then frame.saveHandler(frame.scrollAreaDropdown:GetSelectedID(), frame.saveArg1) end
+	button:SetClickHandler(function(this)
+		frame:Hide()
+		if frame.saveHandler then
+			frame.saveHandler(frame.scrollAreaDropdown:GetSelectedID(), frame.saveArg1)
 		end
-	)
+	end)
 	frame.okayButton = button
 
 	-- Cancel button.
@@ -2031,11 +1926,9 @@ local function CreateScrollAreaSelection()
 	objLocale = L.BUTTONS["inputCancel"]
 	button:Configure(20, objLocale.label, objLocale.tooltip)
 	button:SetPoint("BOTTOMLEFT", frame, "BOTTOM", 10, 20)
-	button:SetClickHandler(
-		function (this)
-			frame:Hide()
-		end
-	)
+	button:SetClickHandler(function(this)
+		frame:Hide()
+	end)
 
 	return frame
 end
@@ -2176,55 +2069,51 @@ local function CreateEvent()
 	local objLocale = L.BUTTONS["customSound"]
 	button:SetTooltip(objLocale.tooltip)
 	button:SetPoint("LEFT", controls.soundDropdown, "RIGHT", 10, -5)
-	button:SetClickHandler(
-		function (this)
-			local objLocale = L.EDITBOXES["soundFile"]
-			EraseTable(tempConfig)
-			tempConfig.editboxLabel = objLocale.label
-			tempConfig.editboxTooltip = objLocale.tooltip
-			tempConfig.parentFrame = frame
-			tempConfig.anchorFrame = this
-			tempConfig.anchorPoint = "BOTTOMRIGHT"
-			tempConfig.relativePoint = "TOPRIGHT"
-			tempConfig.validateHandler = ValidateSoundFileName
-			tempConfig.saveHandler = AddCustomSoundFile
-			tempConfig.hideHandler = EnableEventControls
-			DisableControls(controls)
-			ShowInput(tempConfig)
-		end
-	)
-	controls[#controls+1] = button
+	button:SetClickHandler(function(this)
+		local objLocale = L.EDITBOXES["soundFile"]
+		EraseTable(tempConfig)
+		tempConfig.editboxLabel = objLocale.label
+		tempConfig.editboxTooltip = objLocale.tooltip
+		tempConfig.parentFrame = frame
+		tempConfig.anchorFrame = this
+		tempConfig.anchorPoint = "BOTTOMRIGHT"
+		tempConfig.relativePoint = "TOPRIGHT"
+		tempConfig.validateHandler = ValidateSoundFileName
+		tempConfig.saveHandler = AddCustomSoundFile
+		tempConfig.hideHandler = EnableEventControls
+		DisableControls(controls)
+		ShowInput(tempConfig)
+	end)
+	controls[#controls + 1] = button
 
 	-- Play sound button.
 	local button = MSBTControls.CreateOptionButton(frame)
 	local objLocale = L.BUTTONS["playSound"]
 	button:Configure(20, objLocale.label, objLocale.tooltip)
 	button:SetPoint("LEFT", controls[#controls], "RIGHT", 10, 0)
-	button:SetClickHandler(
-		function (this)
-			local soundFile = controls.soundDropdown:GetSelectedID()
-			for soundName, soundPath in MikSBT.IterateSounds() do
-				if (soundName == soundFile) then soundFile = soundPath end
-			end
-			--print(soundFile)
-			if (type(soundFile) == "string") then
-				if (soundFile ~= "") then
-					local soundFileLower = string.lower(soundFile)
-					-- If the sound file doesn't contain any slashes, assume it is in MSBT's sound folder
-					if (soundFile ~= "" and not string.find(soundFile, "\\", nil, 1) and not string.find(soundFile, "/", nil, 1)) then
-						soundFile = DEFAULT_SOUND_PATH .. soundFile
-					-- If the sound file doesn't begin with "Interface", don't bother trying
-					elseif ((string.find(soundFileLower, "interface", nil, 1) or 0) ~= 1) then
-						return
-					end
-					PlaySoundFile(soundFile, "Master")
+	button:SetClickHandler(function(this)
+		local soundFile = controls.soundDropdown:GetSelectedID()
+		for soundName, soundPath in MikSBT.IterateSounds() do
+			if (soundName == soundFile) then soundFile = soundPath end
+		end
+		--print(soundFile)
+		if (type(soundFile) == "string") then
+			if (soundFile ~= "") then
+				local soundFileLower = string.lower(soundFile)
+				-- If the sound file doesn't contain any slashes, assume it is in MSBT's sound folder
+				if (soundFile ~= "" and not string.find(soundFile, "\\", nil, 1) and not string.find(soundFile, "/", nil, 1)) then
+					soundFile = DEFAULT_SOUND_PATH .. soundFile
+				-- If the sound file doesn't begin with "Interface", don't bother trying
+				elseif ((string.find(soundFileLower, "interface", nil, 1) or 0) ~= 1) then
+					return
 				end
-			else
 				PlaySoundFile(soundFile, "Master")
 			end
+		else
+			PlaySoundFile(soundFile, "Master")
 		end
-	)
-	controls[#controls+1] = button
+	end)
+	controls[#controls + 1] = button
 
 	-- Always sticky checkbox.
 	local checkbox = MSBTControls.CreateCheckbox(frame)
@@ -2248,31 +2137,29 @@ local function CreateEvent()
 	objLocale = L.BUTTONS["genericSave"]
 	button:Configure(20, objLocale.label, objLocale.tooltip)
 	button:SetPoint("BOTTOMRIGHT", frame, "BOTTOM", -10, 20)
-	button:SetClickHandler(
-		function (this)
-			EraseTable(returnSettings)
-			returnSettings.scrollArea = controls.scrollAreaDropdown:GetSelectedID()
-			returnSettings.message = controls.messageEditbox:GetText()
-			returnSettings.soundFile = controls.soundDropdown:GetSelectedID()
-			returnSettings.alwaysSticky = controls.stickyCheckbox:GetChecked()
-			returnSettings.iconSkill = controls.iconSkillEditbox:GetText()
-			frame:Hide()
-			if (frame.saveHandler) then frame.saveHandler(returnSettings, frame.saveArg1) end
+	button:SetClickHandler(function(this)
+		EraseTable(returnSettings)
+		returnSettings.scrollArea = controls.scrollAreaDropdown:GetSelectedID()
+		returnSettings.message = controls.messageEditbox:GetText()
+		returnSettings.soundFile = controls.soundDropdown:GetSelectedID()
+		returnSettings.alwaysSticky = controls.stickyCheckbox:GetChecked()
+		returnSettings.iconSkill = controls.iconSkillEditbox:GetText()
+		frame:Hide()
+		if frame.saveHandler then
+			frame.saveHandler(returnSettings, frame.saveArg1)
 		end
-	)
-	controls[#controls+1] = button
+	end)
+	controls[#controls + 1] = button
 
 	-- Cancel button.
 	button = MSBTControls.CreateOptionButton(frame)
 	objLocale = L.BUTTONS["genericCancel"]
 	button:Configure(20, objLocale.label, objLocale.tooltip)
 	button:SetPoint("BOTTOMLEFT", frame, "BOTTOM", 10, 20)
-	button:SetClickHandler(
-		function (this)
-			frame:Hide()
-		end
-	)
-	controls[#controls+1] = button
+	button:SetClickHandler(function(this)
+		frame:Hide()
+	end)
+	controls[#controls + 1] = button
 
 	return frame
 end
@@ -2357,23 +2244,23 @@ local function CreateClasses()
 	local objLocale = L.CHECKBOXES["allClasses"]
 	checkbox:Configure(24, objLocale.label, objLocale.tooltip)
 	checkbox:SetPoint("TOPLEFT", frame, "TOPLEFT", 20, -40)
-	checkbox:SetClickHandler(
-		function (this, isChecked)
-			frame.classes["ALL"] = isChecked and true or nil
-			if (isChecked) then
-				for name, checkFrame in pairs(frame.classCheckboxes) do
-					checkFrame:SetChecked(true)
-					checkFrame:Disable()
-				end
-			else
-				for name, checkFrame in pairs(classCheckboxes) do
-					checkFrame:Enable()
-					checkFrame:SetChecked(frame.classes[checkFrame.associatedClass])
-				end
+	checkbox:SetClickHandler(function(this, isChecked)
+		frame.classes["ALL"] = isChecked and true or nil
+		if (isChecked) then
+			for name, checkFrame in pairs(frame.classCheckboxes) do
+				checkFrame:SetChecked(true)
+				checkFrame:Disable()
 			end
-			if (frame.updateHandler) then frame.updateHandler() end
+		else
+			for name, checkFrame in pairs(classCheckboxes) do
+				checkFrame:Enable()
+				checkFrame:SetChecked(frame.classes[checkFrame.associatedClass])
+			end
 		end
-	)
+		if (frame.updateHandler) then
+			frame.updateHandler()
+		end
+	end)
 	frame.allClassesCheckbox = checkbox
 
 	local anchor = checkbox
@@ -2381,12 +2268,12 @@ local function CreateClasses()
 		checkbox = MSBTControls.CreateCheckbox(frame)
 		checkbox:Configure(24, CLASS_NAMES[class], nil)
 		checkbox:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", anchor == frame.allClassesCheckbox and 20 or 0, anchor == frame.allClassesCheckbox and -10 or 0)
-		checkbox:SetClickHandler(
-			function (this, isChecked)
-				frame.classes[this.associatedClass] = isChecked and true or nil
-				if (frame.updateHandler) then frame.updateHandler() end
+		checkbox:SetClickHandler(function(this, isChecked)
+			frame.classes[this.associatedClass] = isChecked and true or nil
+			if (frame.updateHandler) then
+				frame.updateHandler()
 			end
-		)
+		end)
 		checkbox.associatedClass = class
 		anchor = checkbox
 		classCheckboxes[class .. "Checkbox"] = checkbox
@@ -2541,33 +2428,31 @@ local function CreateTriggerCondition()
 	objLocale = L.BUTTONS["genericSave"]
 	button:Configure(20, objLocale.label, objLocale.tooltip)
 	button:SetPoint("BOTTOMRIGHT", frame, "BOTTOM", -10, 20)
-	button:SetClickHandler(
-		function (this)
-			EraseTable(returnSettings)
-			returnSettings.conditionType = frame.conditionDropdown:GetSelectedID()
-			returnSettings.conditionRelation = frame.relationDropdown:GetSelectedID()
-			if (frame.parameterEditbox:IsShown()) then
-				returnSettings.conditionValue = frame.parameterEditbox:GetText()
-			elseif (frame.parameterSlider:IsShown()) then
-				returnSettings.conditionValue = frame.parameterSlider:GetValue()
-			elseif (frame.parameterDropdown:IsShown()) then
-				returnSettings.conditionValue = frame.parameterDropdown:GetSelectedID()
-			end
-			frame:Hide()
-			if (frame.saveHandler) then frame.saveHandler(returnSettings, frame.saveArg1) end
+	button:SetClickHandler(function(this)
+		EraseTable(returnSettings)
+		returnSettings.conditionType = frame.conditionDropdown:GetSelectedID()
+		returnSettings.conditionRelation = frame.relationDropdown:GetSelectedID()
+		if (frame.parameterEditbox:IsShown()) then
+			returnSettings.conditionValue = frame.parameterEditbox:GetText()
+		elseif (frame.parameterSlider:IsShown()) then
+			returnSettings.conditionValue = frame.parameterSlider:GetValue()
+		elseif (frame.parameterDropdown:IsShown()) then
+			returnSettings.conditionValue = frame.parameterDropdown:GetSelectedID()
 		end
-	)
+		frame:Hide()
+		if frame.saveHandler then
+			frame.saveHandler(returnSettings, frame.saveArg1)
+		end
+	end)
 
 	-- Cancel button.
 	button = MSBTControls.CreateOptionButton(frame)
 	objLocale = L.BUTTONS["genericCancel"]
 	button:Configure(20, objLocale.label, objLocale.tooltip)
 	button:SetPoint("BOTTOMLEFT", frame, "BOTTOM", 10, 20)
-	button:SetClickHandler(
-		function (this)
-			frame:Hide()
-		end
-	)
+	button:SetClickHandler(function(this)
+		frame:Hide()
+	end)
 
 	return frame
 end
@@ -2655,8 +2540,8 @@ end
 local function SaveMainEventCondition(settings, conditionNum)
 	local frame = popupFrames.mainEventFrame
 	frame.eventConditions[conditionNum] = settings.conditionType
-	frame.eventConditions[conditionNum+1] = settings.conditionRelation
-	frame.eventConditions[conditionNum+2] = settings.conditionValue
+	frame.eventConditions[conditionNum + 1] = settings.conditionRelation
+	frame.eventConditions[conditionNum + 2] = settings.conditionValue
 	UpdateMainEventConditions()
 end
 
@@ -2723,7 +2608,7 @@ local function CreateMainEventConditionsLine(this)
 	button:SetTooltip(objLocale.tooltip)
 	button:SetPoint("RIGHT", frame, "RIGHT", -10, -5)
 	button:SetClickHandler(DeleteConditionButtonOnClick)
-	controls[#controls+1] = button
+	controls[#controls + 1] = button
 
 	-- Condition text.
 	local fontString = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
@@ -2746,10 +2631,10 @@ local function DisplayMainEventConditionsLine(this, line, key, isSelected)
 	local frame = popupFrames.mainEventFrame
 	local conditionType = frame.eventConditions[key]
 	local conditionData = popupFrames.triggerFrame.conditionData[conditionType]
-	local relation = conditionData and conditionData.relations[frame.eventConditions[key+1]]
+	local relation = conditionData and conditionData.relations[frame.eventConditions[key + 1]]
 
 	-- Get the localized parameter.
-	local parameter = frame.eventConditions[key+2]
+	local parameter = frame.eventConditions[key + 2]
 	if (type(parameter) == "boolean") then parameter = tostring(parameter) end
 	if (conditionData and conditionData.controlType == "dropdown") then parameter = conditionData.items[parameter] end
 
@@ -2779,18 +2664,16 @@ local function CreateMainEvent()
 	dropdown:Configure(200, objLocale.label, nil)
 	dropdown:SetListboxHeight(200)
 	dropdown:SetPoint("TOPLEFT", frame, "TOPLEFT", 20, -40)
-	dropdown:SetChangeHandler(
-		function (this, id)
-			EraseTable(frame.eventConditions)
-			local conditionData = popupFrames.triggerFrame.eventConditionData[id]
-			if (conditionData and conditionData.defaultConditions and conditionData.defaultConditions ~= "") then
-				for conditionEntry in string.gmatch(conditionData.defaultConditions .. ";;", "(.-);;") do
-					frame.eventConditions[#frame.eventConditions + 1] = ConvertType(conditionEntry)
-				end
+	dropdown:SetChangeHandler(function(this, id)
+		EraseTable(frame.eventConditions)
+		local conditionData = popupFrames.triggerFrame.eventConditionData[id]
+		if (conditionData and conditionData.defaultConditions and conditionData.defaultConditions ~= "") then
+			for conditionEntry in string.gmatch(conditionData.defaultConditions .. ";;", "(.-);;") do
+				frame.eventConditions[#frame.eventConditions + 1] = ConvertType(conditionEntry)
 			end
-			UpdateMainEventConditions()
 		end
-	)
+		UpdateMainEventConditions()
+	end)
 	for eventType in pairs(popupFrames.triggerFrame.eventConditionData) do
 		dropdown:AddItem(L.TRIGGER_DATA[eventType] or eventType, eventType)
 	end
@@ -2810,32 +2693,32 @@ local function CreateMainEvent()
 	objLocale = L.BUTTONS["addEventCondition"]
 	button:Configure(20, objLocale.label, objLocale.tooltip)
 	button:SetPoint("LEFT", frame.triggerConditionsLabel, "RIGHT", 10, 0)
-	button:SetClickHandler(
-		function (this)
-			local eventType = frame.mainEventDropdown:GetSelectedID()
-			local conditionData = popupFrames.triggerFrame.eventConditionData[eventType]
-			local conditionType, conditionRelation, conditionValue
-			if (conditionData and conditionData.defaultConditions ~= "") then
-				_, _, conditionType, conditionRelation, conditionValue = string.find(conditionData.defaultConditions, "(.-);;(.-);;(.-)")
-	conditionValue = conditionValue and ConvertType(conditionValue)
-	if (type(conditionValue == "boolean")) then conditionValue = tostring(conditionValue) end
+	button:SetClickHandler(function(this)
+		local eventType = frame.mainEventDropdown:GetSelectedID()
+		local conditionData = popupFrames.triggerFrame.eventConditionData[eventType]
+		local conditionType, conditionRelation, conditionValue
+		if (conditionData and conditionData.defaultConditions ~= "") then
+			_, _, conditionType, conditionRelation, conditionValue = string.find(conditionData.defaultConditions, "(.-);;(.-);;(.-)")
+			conditionValue = conditionValue and ConvertType(conditionValue)
+			if (type(conditionValue == "boolean")) then
+				conditionValue = tostring(conditionValue)
 			end
-			EraseTable(tempConfig)
-			tempConfig.conditionType = conditionType or "skillName"
-			tempConfig.conditionRelation = conditionRelation or "eq"
-			tempConfig.conditionValue = conditionValue or ""
-			tempConfig.availableConditions = conditionData and conditionData.availableConditions
-			tempConfig.saveHandler = SaveMainEventCondition
-			tempConfig.saveArg1 = #frame.eventConditions + 1
-			tempConfig.parentFrame = frame
-			tempConfig.anchorFrame = this
-			tempConfig.anchorPoint = "BOTTOMLEFT"
-			tempConfig.relativePoint = "TOPLEFT"
-			tempConfig.hideHandler = EnableMainEventControls
-			DisableControls(frame.controls)
-			ShowTriggerCondition(tempConfig)
 		end
-	)
+		EraseTable(tempConfig)
+		tempConfig.conditionType = conditionType or "skillName"
+		tempConfig.conditionRelation = conditionRelation or "eq"
+		tempConfig.conditionValue = conditionValue or ""
+		tempConfig.availableConditions = conditionData and conditionData.availableConditions
+		tempConfig.saveHandler = SaveMainEventCondition
+		tempConfig.saveArg1 = #frame.eventConditions + 1
+		tempConfig.parentFrame = frame
+		tempConfig.anchorFrame = this
+		tempConfig.anchorPoint = "BOTTOMLEFT"
+		tempConfig.relativePoint = "TOPLEFT"
+		tempConfig.hideHandler = EnableMainEventControls
+		DisableControls(frame.controls)
+		ShowTriggerCondition(tempConfig)
+	end)
 	controls[#controls + 1] = button
 
 	-- Main event conditions listbox.
@@ -2854,31 +2737,29 @@ local function CreateMainEvent()
 	objLocale = L.BUTTONS["genericSave"]
 	button:Configure(20, objLocale.label, objLocale.tooltip)
 	button:SetPoint("BOTTOMRIGHT", frame, "BOTTOM", -10, 20)
-	button:SetClickHandler(
-		function (this)
-			EraseTable(returnSettings)
-			returnSettings.eventType = frame.mainEventDropdown:GetSelectedID()
-			returnSettings.eventConditions = {}
-			for _, conditionEntry in ipairs(frame.eventConditions) do
-				returnSettings.eventConditions[#returnSettings.eventConditions+1] = conditionEntry
-			end
-			frame:Hide()
-			if (frame.saveHandler) then frame.saveHandler(returnSettings, frame.saveArg1) end
+	button:SetClickHandler(function(this)
+		EraseTable(returnSettings)
+		returnSettings.eventType = frame.mainEventDropdown:GetSelectedID()
+		returnSettings.eventConditions = {}
+		for _, conditionEntry in ipairs(frame.eventConditions) do
+			returnSettings.eventConditions[#returnSettings.eventConditions + 1] = conditionEntry
 		end
-	)
-	controls[#controls+1] = button
+		frame:Hide()
+		if frame.saveHandler then
+			frame.saveHandler(returnSettings, frame.saveArg1)
+		end
+	end)
+	controls[#controls + 1] = button
 
 	-- Cancel button.
 	button = MSBTControls.CreateOptionButton(frame)
 	objLocale = L.BUTTONS["genericCancel"]
 	button:Configure(20, objLocale.label, objLocale.tooltip)
 	button:SetPoint("BOTTOMLEFT", frame, "BOTTOM", 10, 20)
-	button:SetClickHandler(
-		function (this)
-			frame:Hide()
-		end
-	)
-	controls[#controls+1] = button
+	button:SetClickHandler(function(this)
+		frame:Hide()
+	end)
+	controls[#controls + 1] = button
 
 	frame.eventConditions = {}
 
@@ -2905,7 +2786,7 @@ local function ShowMainEvent(configTable)
 
 	EraseTable(frame.eventConditions)
 	for _, conditionEntry in ipairs(configTable.eventConditions) do
-		frame.eventConditions[#frame.eventConditions+1] = conditionEntry
+		frame.eventConditions[#frame.eventConditions + 1] = conditionEntry
 	end
 	UpdateMainEventConditions()
 
@@ -2998,8 +2879,8 @@ end
 local function SaveException(settings, exceptionNum)
 	local frame = popupFrames.triggerFrame
 	frame.exceptions[exceptionNum] = settings.conditionType
-	frame.exceptions[exceptionNum+1] = settings.conditionRelation
-	frame.exceptions[exceptionNum+2] = settings.conditionValue
+	frame.exceptions[exceptionNum + 1] = settings.conditionRelation
+	frame.exceptions[exceptionNum + 2] = settings.conditionValue
 	UpdateExceptions()
 end
 
@@ -3033,8 +2914,8 @@ local function EditExceptionButtonOnClick(this)
 
 	EraseTable(tempConfig)
 	tempConfig.conditionType = frame.exceptions[line.exceptionNum]
-	tempConfig.conditionRelation = frame.exceptions[line.exceptionNum+1]
-	tempConfig.conditionValue = frame.exceptions[line.exceptionNum+2]
+	tempConfig.conditionRelation = frame.exceptions[line.exceptionNum + 1]
+	tempConfig.conditionValue = frame.exceptions[line.exceptionNum + 2]
 	tempConfig.availableConditions = frame.availableExceptions
 	tempConfig.saveHandler = SaveException
 	tempConfig.saveArg1 = line.exceptionNum
@@ -3088,7 +2969,7 @@ local function CreateMainEventsLine(this)
 	button:SetPoint("LEFT", frame, "LEFT", 0, 0)
 	button:SetClickHandler(EditMainEventButtonOnClick)
 	frame.editEventButton = button
-	controls[#controls+1] = button
+	controls[#controls + 1] = button
 
 
 	-- Delete event button.
@@ -3097,7 +2978,7 @@ local function CreateMainEventsLine(this)
 	button:SetTooltip(objLocale.tooltip)
 	button:SetPoint("RIGHT", frame, "RIGHT", -10, 0)
 	button:SetClickHandler(DeleteMainEventButtonOnClick)
-	controls[#controls+1] = button
+	controls[#controls + 1] = button
 
 	-- Event text.
 	local fontString = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
@@ -3126,7 +3007,7 @@ local function CreateExceptionsLine(this)
 	button:SetPoint("LEFT", frame, "LEFT", 0, 0)
 	button:SetClickHandler(EditExceptionButtonOnClick)
 	frame.editExceptionButton = button
-	controls[#controls+1] = button
+	controls[#controls + 1] = button
 
 	-- Delete exception button.
 	button = MSBTControls.CreateIconButton(frame, "Delete")
@@ -3134,7 +3015,7 @@ local function CreateExceptionsLine(this)
 	button:SetTooltip(objLocale.tooltip)
 	button:SetPoint("RIGHT", frame, "RIGHT", -10, -5)
 	button:SetClickHandler(DeleteExceptionButtonOnClick)
-	controls[#controls+1] = button
+	controls[#controls + 1] = button
 
 	-- Exception text.
 	local fontString = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
@@ -3175,10 +3056,10 @@ local function DisplayExceptionsLine(this, line, key, isSelected)
 	local frame = popupFrames.triggerFrame
 	local exceptionType = frame.exceptions[key]
 	local conditionData = frame.conditionData[exceptionType]
-	local relation = conditionData.relations[frame.exceptions[key+1]]
+	local relation = conditionData.relations[frame.exceptions[key + 1]]
 
 	-- Get the localized parameter.
-	local parameter = frame.exceptions[key+2]
+	local parameter = frame.exceptions[key + 2]
 	if (type(parameter) == "boolean") then parameter = tostring(parameter) end
 	if (conditionData.controlType == "dropdown") then parameter = conditionData.items[parameter] end
 
@@ -3216,19 +3097,17 @@ local function CreateTriggerPopup()
 	local objLocale = L.BUTTONS["editTriggerClasses"]
 	button:SetTooltip(objLocale.tooltip)
 	button:SetPoint("TOPLEFT", frame.classesLabel, "BOTTOMLEFT", 10, -5)
-	button:SetClickHandler(
-		function (this)
-			EraseTable(tempConfig)
-			tempConfig.parentFrame = frame
-			tempConfig.anchorFrame = this
-			tempConfig.classes = frame.classes
-			tempConfig.updateHandler = UpdateClassesText
-			tempConfig.hideHandler = EnableTriggerControls
-			DisableControls(controls)
-			ShowClasses(tempConfig)
-		end
-	)
-	controls[#controls+1] = button
+	button:SetClickHandler(function(this)
+		EraseTable(tempConfig)
+		tempConfig.parentFrame = frame
+		tempConfig.anchorFrame = this
+		tempConfig.classes = frame.classes
+		tempConfig.updateHandler = UpdateClassesText
+		tempConfig.hideHandler = EnableTriggerControls
+		DisableControls(controls)
+		ShowClasses(tempConfig)
+	end)
+	controls[#controls + 1] = button
 
 	-- Classes text.
 	fontString = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
@@ -3251,21 +3130,19 @@ local function CreateTriggerPopup()
 	objLocale = L.BUTTONS["addMainEvent"]
 	button:Configure(20, objLocale.label, objLocale.tooltip)
 	button:SetPoint("LEFT", frame.mainEventsLabel, "RIGHT", 10, 0)
-	button:SetClickHandler(
-		function (this)
-			EraseTable(tempConfig)
-			tempConfig.eventType = "SPELL_AURA_APPLIED"
-			tempConfig.eventConditions = {"recipientAffiliation", "eq", FLAG_YOU, "skillName", "eq", UNKNOWN }
-			tempConfig.saveHandler = SaveMainEvent
-			tempConfig.saveArg1 = #frame.mainEvents + 1
-			tempConfig.parentFrame = frame
-			tempConfig.anchorFrame = this
-			tempConfig.hideHandler = EnableTriggerControls
-			DisableControls(frame.controls)
-			ShowMainEvent(tempConfig)
-		end
-	)
-	controls[#controls+1] = button
+	button:SetClickHandler(function(this)
+		EraseTable(tempConfig)
+		tempConfig.eventType = "SPELL_AURA_APPLIED"
+		tempConfig.eventConditions = {"recipientAffiliation", "eq", FLAG_YOU, "skillName", "eq", UNKNOWN }
+		tempConfig.saveHandler = SaveMainEvent
+		tempConfig.saveArg1 = #frame.mainEvents + 1
+		tempConfig.parentFrame = frame
+		tempConfig.anchorFrame = this
+		tempConfig.hideHandler = EnableTriggerControls
+		DisableControls(frame.controls)
+		ShowMainEvent(tempConfig)
+	end)
+	controls[#controls + 1] = button
 
 	-- Main events listbox.
 	local listbox = MSBTControls.CreateListbox(frame)
@@ -3274,7 +3151,7 @@ local function CreateTriggerPopup()
 	listbox:SetCreateLineHandler(CreateMainEventsLine)
 	listbox:SetDisplayHandler(DisplayMainEventsLine)
 	frame.mainEventsListbox = listbox
-	controls[#controls+1] = listbox
+	controls[#controls + 1] = listbox
 
 
 	-- Trigger exceptions label.
@@ -3288,25 +3165,23 @@ local function CreateTriggerPopup()
 	objLocale = L.BUTTONS["addTriggerException"]
 	button:Configure(20, objLocale.label, objLocale.tooltip)
 	button:SetPoint("LEFT", frame.triggerExceptionsLabel, "RIGHT", 10, 0)
-	button:SetClickHandler(
-		function (this)
-			EraseTable(tempConfig)
-			tempConfig.conditionType = "recentlyFired"
-			tempConfig.conditionRelation = "lt"
-			tempConfig.conditionValue = 5
-			tempConfig.availableConditions = frame.availableExceptions
-			tempConfig.saveHandler = SaveException
-			tempConfig.saveArg1 = #frame.exceptions+1
-			tempConfig.parentFrame = frame
-			tempConfig.anchorFrame = this
-			tempConfig.anchorPoint = "BOTTOMLEFT"
-			tempConfig.relativePoint = "TOPLEFT"
-			tempConfig.hideHandler = EnableTriggerControls
-			DisableControls(frame.controls)
-			ShowTriggerCondition(tempConfig)
-		end
-	)
-	controls[#controls+1] = button
+	button:SetClickHandler(function(this)
+		EraseTable(tempConfig)
+		tempConfig.conditionType = "recentlyFired"
+		tempConfig.conditionRelation = "lt"
+		tempConfig.conditionValue = 5
+		tempConfig.availableConditions = frame.availableExceptions
+		tempConfig.saveHandler = SaveException
+		tempConfig.saveArg1 = #frame.exceptions + 1
+		tempConfig.parentFrame = frame
+		tempConfig.anchorFrame = this
+		tempConfig.anchorPoint = "BOTTOMLEFT"
+		tempConfig.relativePoint = "TOPLEFT"
+		tempConfig.hideHandler = EnableTriggerControls
+		DisableControls(frame.controls)
+		ShowTriggerCondition(tempConfig)
+	end)
+	controls[#controls + 1] = button
 
 	-- Trigger exceptions listbox.
 	listbox = MSBTControls.CreateListbox(frame)
@@ -3315,69 +3190,64 @@ local function CreateTriggerPopup()
 	listbox:SetCreateLineHandler(CreateExceptionsLine)
 	listbox:SetDisplayHandler(DisplayExceptionsLine)
 	frame.exceptionsListbox = listbox
-	controls[#controls+1] = listbox
+	controls[#controls + 1] = listbox
 
 	-- Save button.
 	button = MSBTControls.CreateOptionButton(frame)
 	objLocale = L.BUTTONS["genericSave"]
 	button:Configure(20, objLocale.label, objLocale.tooltip)
 	button:SetPoint("BOTTOMRIGHT", frame, "BOTTOM", -10, 20)
-	button:SetClickHandler(
-		function (this)
-			EraseTable(returnSettings)
-			-- Make the classes string.
-			if (not frame.classes["ALL"]) then
-				local sortedClasses = frame.sortedClasses
-				EraseTable(sortedClasses)
-				for class in pairs(frame.classes) do
-					sortedClasses[#sortedClasses+1] = class
-				end
-				table.sort(sortedClasses)
-				returnSettings.classes = table.concat(sortedClasses, ",")
+	button:SetClickHandler(function(this)
+		EraseTable(returnSettings)
+		-- Make the classes string.
+		if not frame.classes["ALL"] then
+			local sortedClasses = frame.sortedClasses
+			EraseTable(sortedClasses)
+			for class in pairs(frame.classes) do
+				sortedClasses[#sortedClasses + 1] = class
 			end
-
-			-- Make the main events string.
-			if (next(frame.mainEvents)) then
-				local events = ""
-				for eventNum, eventType in ipairs(frame.mainEvents) do
-					events = events .. eventType .. "{"
-					if (next(frame.eventConditions[eventNum])) then
-						for _, conditionEntry in ipairs(frame.eventConditions[eventNum]) do
-							events = events .. tostring(conditionEntry) .. ";;"
-						end
-						events = string.sub(events, 1, -3)
-					end
-					events = events .. "}&&"
-				end
-				returnSettings.mainEvents = string.sub(events, 1, -3)
-			end
-
-			-- Make the exceptions string.
-			if (next(frame.exceptions)) then
-				local exceptions = ""
-				for x = 1, #frame.exceptions, 3 do
-					exceptions = exceptions .. string.format("%s;;%s;;%s;;", tostring(frame.exceptions[x]), tostring(frame.exceptions[x+1]), tostring(frame.exceptions[x+2]))
-				end
-				returnSettings.exceptions = string.sub(exceptions, 1, -3)
-			end
-
-			frame:Hide()
-			if (frame.saveHandler) then frame.saveHandler(returnSettings, frame.saveArg1) end
+			table.sort(sortedClasses)
+			returnSettings.classes = table.concat(sortedClasses, ",")
 		end
-	)
-	controls[#controls+1] = button
+		-- Make the main events string.
+		if next(frame.mainEvents) then
+			local events = ""
+			for eventNum, eventType in ipairs(frame.mainEvents) do
+				events = events .. eventType .. "{"
+				if next(frame.eventConditions[eventNum]) then
+					for _, conditionEntry in ipairs(frame.eventConditions[eventNum]) do
+						events = events .. tostring(conditionEntry) .. ";;"
+					end
+					events = string.sub(events, 1, -3)
+				end
+				events = events .. "}&&"
+			end
+			returnSettings.mainEvents = string.sub(events, 1, -3)
+		end
+		-- Make the exceptions string.
+		if next(frame.exceptions) then
+			local exceptions = ""
+			for x = 1, #frame.exceptions, 3 do
+				exceptions = exceptions .. string.format("%s;;%s;;%s;;", tostring(frame.exceptions[x]), tostring(frame.exceptions[x + 1]), tostring(frame.exceptions[x + 2]))
+			end
+			returnSettings.exceptions = string.sub(exceptions, 1, -3)
+		end
+		frame:Hide()
+		if frame.saveHandler then
+			frame.saveHandler(returnSettings, frame.saveArg1)
+		end
+	end)
+	controls[#controls + 1] = button
 
 	-- Cancel button.
 	button = MSBTControls.CreateOptionButton(frame)
 	objLocale = L.BUTTONS["genericCancel"]
 	button:Configure(20, objLocale.label, objLocale.tooltip)
 	button:SetPoint("BOTTOMLEFT", frame, "BOTTOM", 10, 20)
-	button:SetClickHandler(
-		function (this)
-			frame:Hide()
-		end
-	)
-	controls[#controls+1] = button
+	button:SetClickHandler(function(this)
+		frame:Hide()
+	end)
+	controls[#controls + 1] = button
 
 	frame.classes = {}
 	frame.sortedClasses = {}
@@ -3488,7 +3358,7 @@ local function CreateTriggerPopup()
 
 	-- Localized warrior stances.
 	local warriorStances
-	if WOW_PROJECT_ID >= WOW_PROJECT_CLASSIC then
+	if not IsVanillaClassic then
 		warriorStances = {
 			[1] = GetSkillName(2457),
 			[2] = GetSkillName(71),
@@ -3707,14 +3577,14 @@ local function ShowTrigger(configTable)
 	EraseTable(frame.eventConditions)
 	if (settings.mainEvents) then
 		for eventType, eventConditions in string.gmatch(settings.mainEvents .. "&&", "(.-)%{(.-)%}&&") do
-			frame.mainEvents[#frame.mainEvents+1] = eventType
+			frame.mainEvents[#frame.mainEvents + 1] = eventType
 			conditions = {}
 			if (eventConditions ~= "") then
 				for conditionEntry in string.gmatch(eventConditions .. ";;", "(.-);;") do
-					conditions[#conditions+1] = ConvertType(conditionEntry)
+					conditions[#conditions + 1] = ConvertType(conditionEntry)
 				end
 			end
-			frame.eventConditions[#frame.eventConditions+1] = conditions
+			frame.eventConditions[#frame.eventConditions + 1] = conditions
 		end
 	end
 	UpdateMainEvents()
@@ -3723,7 +3593,7 @@ local function ShowTrigger(configTable)
 	EraseTable(frame.exceptions)
 	if (settings.exceptions and settings.exceptions ~= "") then
 		for exceptionCondition in string.gmatch(settings.exceptions .. ";;", "(.-);;") do
-			frame.exceptions[#frame.exceptions+1] = ConvertType(exceptionCondition)
+			frame.exceptions[#frame.exceptions + 1] = ConvertType(exceptionCondition)
 		end
 	end
 	UpdateExceptions()
@@ -3804,7 +3674,7 @@ local function CreateItemListLine(this)
 	button:SetPoint("RIGHT", frame, "RIGHT", -10, 0)
 	button:SetClickHandler(DeleteItemButtonOnClick)
 	frame.deleteButton = button
-	controls[#controls+1] = button
+	controls[#controls + 1] = button
 
 	-- Item name text.
 	local fontString = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
@@ -3854,23 +3724,21 @@ local function CreateItemList()
 	local objLocale = L.BUTTONS["addItem"]
 	button:Configure(20, objLocale.label, objLocale.tooltip)
 	button:SetPoint("LEFT", frame.itemsFontString, "RIGHT", 10, 0)
-	button:SetClickHandler(
-		function (this)
-			local objLocale = L.EDITBOXES["itemName"]
-			EraseTable(tempConfig)
-			tempConfig.editboxLabel = objLocale.label
-			tempConfig.editboxTooltip = objLocale.tooltip
-			tempConfig.parentFrame = frame
-			tempConfig.anchorFrame = this
-			tempConfig.validateHandler = ValidateItemListName
-			tempConfig.saveHandler = SaveItemListName
-			tempConfig.hideHandler = EnableItemListControls
-			DisableControls(controls)
-			ShowInput(tempConfig)
-		end
-	)
+	button:SetClickHandler(function(this)
+		local objLocale = L.EDITBOXES["itemName"]
+		EraseTable(tempConfig)
+		tempConfig.editboxLabel = objLocale.label
+		tempConfig.editboxTooltip = objLocale.tooltip
+		tempConfig.parentFrame = frame
+		tempConfig.anchorFrame = this
+		tempConfig.validateHandler = ValidateItemListName
+		tempConfig.saveHandler = SaveItemListName
+		tempConfig.hideHandler = EnableItemListControls
+		DisableControls(controls)
+		ShowInput(tempConfig)
+	end)
 	frame.addItemButton = button
-	controls[#controls+1] = button
+	controls[#controls + 1] = button
 
 	-- Items listbox.
 	local listbox = MSBTControls.CreateListbox(frame)
@@ -3879,32 +3747,30 @@ local function CreateItemList()
 	listbox:SetCreateLineHandler(CreateItemListLine)
 	listbox:SetDisplayHandler(DisplayItemListLine)
 	frame.itemsListbox = listbox
-	controls[#controls+1] = listbox
+	controls[#controls + 1] = listbox
 
 	-- Save button.
 	button = MSBTControls.CreateOptionButton(frame)
 	objLocale = L.BUTTONS["genericSave"]
 	button:Configure(20, objLocale.label, objLocale.tooltip)
 	button:SetPoint("BOTTOMRIGHT", frame, "BOTTOM", -10, 20)
-	button:SetClickHandler(
-		function (this)
-			frame:Hide()
-			if (frame.saveHandler) then frame.saveHandler(frame.saveArg1) end
+	button:SetClickHandler(function(this)
+		frame:Hide()
+		if frame.saveHandler then
+			frame.saveHandler(frame.saveArg1)
 		end
-	)
-	controls[#controls+1] = button
+	end)
+	controls[#controls + 1] = button
 
 	-- Cancel button.
 	button = MSBTControls.CreateOptionButton(frame)
 	objLocale = L.BUTTONS["genericCancel"]
 	button:Configure(20, objLocale.label, objLocale.tooltip)
 	button:SetPoint("BOTTOMLEFT", frame, "BOTTOM", 10, 20)
-	button:SetClickHandler(
-		function (this)
-			frame:Hide()
-		end
-	)
-	controls[#controls+1] = button
+	button:SetClickHandler(function(this)
+		frame:Hide()
+	end)
+	controls[#controls + 1] = button
 
 	return frame
 end
@@ -4026,7 +3892,7 @@ local function CreateSkillListLine(this)
 	button:SetPoint("RIGHT", frame, "RIGHT", -10, 0)
 	button:SetClickHandler(DeleteSkillButtonOnClick)
 	frame.deleteButton = button
-	controls[#controls+1] = button
+	controls[#controls + 1] = button
 
 	-- Time slider.
 	local slider = MSBTControls.CreateSlider(frame)
@@ -4037,7 +3903,7 @@ local function CreateSkillListLine(this)
 	slider:SetValueStep(1)
 	slider:SetValueChangedHandler(TimeSliderOnValueChanged)
 	frame.timeSlider = slider
-	controls[#controls+1] = slider
+	controls[#controls + 1] = slider
 
 	-- Skill name text.
 	local fontString = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
@@ -4099,29 +3965,27 @@ local function CreateSkillList()
 	local objLocale = L.BUTTONS["addSkill"]
 	button:Configure(20, objLocale.label, objLocale.tooltip)
 	button:SetPoint("LEFT", frame.skillsFontString, "RIGHT", 10, 0)
-	button:SetClickHandler(
-		function (this)
-			local objLocale = L.EDITBOXES["skillName"]
-			EraseTable(tempConfig)
-			tempConfig.editboxLabel = objLocale.label
-			tempConfig.editboxTooltip = objLocale.tooltip
-			tempConfig.parentFrame = frame
-			tempConfig.anchorFrame = this
-			tempConfig.validateHandler = ValidateSkillListName
-			tempConfig.saveHandler = SaveSkillListName
-			tempConfig.hideHandler = EnableSkillListControls
-			if (frame.listType == "substitution") then
-				objLocale = L.EDITBOXES["substitutionText"]
-				tempConfig.showSecondEditbox = true
-				tempConfig.secondEditboxLabel = objLocale.label
-				tempConfig.secondEditboxTooltip = objLocale.tooltip
-			end
-			DisableControls(controls)
-			ShowInput(tempConfig)
+	button:SetClickHandler(function(this)
+		local objLocale = L.EDITBOXES["skillName"]
+		EraseTable(tempConfig)
+		tempConfig.editboxLabel = objLocale.label
+		tempConfig.editboxTooltip = objLocale.tooltip
+		tempConfig.parentFrame = frame
+		tempConfig.anchorFrame = this
+		tempConfig.validateHandler = ValidateSkillListName
+		tempConfig.saveHandler = SaveSkillListName
+		tempConfig.hideHandler = EnableSkillListControls
+		if (frame.listType == "substitution") then
+			objLocale = L.EDITBOXES["substitutionText"]
+			tempConfig.showSecondEditbox = true
+			tempConfig.secondEditboxLabel = objLocale.label
+			tempConfig.secondEditboxTooltip = objLocale.tooltip
 		end
-	)
+		DisableControls(controls)
+		ShowInput(tempConfig)
+	end)
 	frame.addSkillButton = button
-	controls[#controls+1] = button
+	controls[#controls + 1] = button
 
 	-- Skills listbox.
 	local listbox = MSBTControls.CreateListbox(frame)
@@ -4130,32 +3994,30 @@ local function CreateSkillList()
 	listbox:SetCreateLineHandler(CreateSkillListLine)
 	listbox:SetDisplayHandler(DisplaySkillListLine)
 	frame.skillsListbox = listbox
-	controls[#controls+1] = listbox
+	controls[#controls + 1] = listbox
 
 	-- Save button.
 	button = MSBTControls.CreateOptionButton(frame)
 	objLocale = L.BUTTONS["genericSave"]
 	button:Configure(20, objLocale.label, objLocale.tooltip)
 	button:SetPoint("BOTTOMRIGHT", frame, "BOTTOM", -10, 20)
-	button:SetClickHandler(
-		function (this)
-			frame:Hide()
-			if (frame.saveHandler) then frame.saveHandler(frame.saveArg1) end
+	button:SetClickHandler(function (this)
+		frame:Hide()
+		if frame.saveHandler then
+			frame.saveHandler(frame.saveArg1)
 		end
-	)
-	controls[#controls+1] = button
+	end)
+	controls[#controls + 1] = button
 
 	-- Cancel button.
 	button = MSBTControls.CreateOptionButton(frame)
 	objLocale = L.BUTTONS["genericCancel"]
 	button:Configure(20, objLocale.label, objLocale.tooltip)
 	button:SetPoint("BOTTOMLEFT", frame, "BOTTOM", 10, 20)
-	button:SetClickHandler(
-		function (this)
-			frame:Hide()
-		end
-	)
-	controls[#controls+1] = button
+	button:SetClickHandler(function(this)
+		frame:Hide()
+	end)
+	controls[#controls + 1] = button
 
 	return frame
 end
@@ -4202,7 +4064,11 @@ end
 -- Initialization.
 -------------------------------------------------------------------------------
 
-CLASS_NAMES = LocalizedClassList();
+if IsClassic then
+	FillLocalizedClassList(CLASS_NAMES)
+else
+	CLASS_NAMES = LocalizedClassList()
+end
 
 
 

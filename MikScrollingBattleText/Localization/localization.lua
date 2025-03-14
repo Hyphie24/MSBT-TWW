@@ -50,6 +50,8 @@ L.COMMAND_USAGE = {
 	"  " .. L.COMMAND_HELP .. " - Show the command usage.",
 }
 
+L.COSMIC			= "Cosmic"
+
 
 ------------------------------
 -- Output messages
@@ -88,8 +90,8 @@ L.MSG_AC_FULL					= "Full Arcane Charges"
 L.MSG_CP_FULL					= "Finish It"
 L.MSG_HOLY_POWER_FULL			= "Full Holy Power"
 L.MSG_SHADOW_ORBS_FULL			= "Full Shadow Orbs"
-L.MSG_ESSENCE				= "Essence"
-L.MSG_ESSENCE_FULL			= "Full Essence"
+L.MSG_ESSENCE					= "Essence"
+L.MSG_ESSENCE_FULL				= "Full Essence"
 L.MSG_KILLING_BLOW				= "Killing Blow"
 L.MSG_TRIGGER_LOW_HEALTH		= "Low Health"
 L.MSG_TRIGGER_LOW_MANA			= "Low Mana"

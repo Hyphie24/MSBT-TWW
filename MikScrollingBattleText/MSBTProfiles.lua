@@ -20,13 +20,15 @@ local L = MikSBT.translations
 local string_find = string.find
 local string_gsub = string.gsub
 local string_format = string.format
+
 local CopyTable = MikSBT.CopyTable
 local EraseTable = MikSBT.EraseTable
-local SplitString = MikSBT.SplitString
-local Print = MikSBT.Print
 local GetSkillName = MikSBT.GetSkillName
+local Print = MikSBT.Print
+local SplitString = MikSBT.SplitString
 
 local IsClassic = WOW_PROJECT_ID >= WOW_PROJECT_CLASSIC
+local IsCataClassic = WOW_PROJECT_ID == WOW_PROJECT_CATACLYSM_CLASSIC
 
 
 -------------------------------------------------------------------------------
@@ -44,7 +46,7 @@ local SAVED_MEDIA_NAME			= "MSBT_SavedMedia"
 local PET_SPACE = PET .. " "
 
 -- Flags used by the combat log.
-local FLAG_YOU 					= 0xF0000000
+local FLAG_YOU					= 0xF0000000
 local TARGET_TARGET				= 0x00010000
 local REACTION_HOSTILE			= 0x00000040
 
@@ -62,54 +64,54 @@ local SPELLID_VICTORY_RUSH		= not IsClassic and 34428
 --local SPELLID_SHADOW_ORB		= 77487
 
 -- Trigger spell names.
---local SPELL_BERSERK				= C_Spell.GetSpellName(SPELLID_BERSERK)
---local SPELL_BLINDSIDE				= C_Spell.GetSpellName(121153)
---local SPELL_BLOODSURGE			= C_Spell.GetSpellName(46916)
---local SPELL_BRAIN_FREEZE			= C_Spell.GetSpellName(44549)
---local SPELL_BF_FIREBALL			= C_Spell.GetSpellName(57761)
-local SPELL_CLEARCASTING			= C_Spell.GetSpellName(16870)
---local SPELL_DECIMATION			= C_Spell.GetSpellName(108869)
-local SPELL_ELUSIVE_BREW			= not IsClassic and C_Spell.GetSpellName(128939)
-local SPELL_EXECUTE					= C_Spell.GetSpellName(SPELLID_EXECUTE)
-local SPELL_FINGERS_OF_FROST		= not IsClassic and C_Spell.GetSpellName(112965)
-local SPELL_FREEZING_FOG			= not IsClassic and C_Spell.GetSpellName(59052)
-local SPELL_HAMMER_OF_WRATH			= C_Spell.GetSpellName(SPELLID_HAMMER_OF_WRATH)
---local SPELL_KILL_SHOT				= C_Spell.GetSpellName(SPELLID_KILL_SHOT)
-local SPELL_KILLING_MACHINE			= not IsClassic and C_Spell.GetSpellName(51124)
-local SPELL_LAVA_SURGE				= not IsClassic and C_Spell.GetSpellName(SPELLID_LAVA_SURGE)
---local SPELL_LOCK_AND_LOAD			= C_Spell.GetSpellName(168980)
---local SPELL_MAELSTROM_WEAPON		= C_Spell.GetSpellName(53817)
---local SPELL_MANA_TEA				= C_Spell.GetSpellName(115867)
-local SPELL_MISSILE_BARRAGE			= not IsClassic and C_Spell.GetSpellName(62401)
---local SPELL_MOLTEN_CORE			= C_Spell.GetSpellName(122351)
---local SPELL_NIGHTFALL				= C_Spell.GetSpellName(108558)
-local SPELL_PREDATORS_SWIFTNESS		= not IsClassic and C_Spell.GetSpellName(69369)
-local SPELL_PVP_TRINKET				= not IsClassic and C_Spell.GetSpellName(42292)
-local SPELL_REVENGE					= C_Spell.GetSpellName(SPELLID_REVENGE)
-local SPELL_RIME 					= not IsClassic and C_Spell.GetSpellName(59057)
-local SPELL_SHADOW_TRANCE			= C_Spell.GetSpellName(17941)
-local SPELL_SHIELD_SLAM				= C_Spell.GetSpellName(23922)
---local SPELL_SHADOW_INFUSION		= C_Spell.GetSpellName(91342)
---local SPELL_SHADOW_ORB			= C_Spell.GetSpellName(SPELLID_SHADOW_ORB)
---local SPELL_SHOOTING_STARS		= C_Spell.GetSpellName(93400)
-local SPELL_SUDDEN_DEATH			= not IsClassic and C_Spell.GetSpellName(52437)
-local SPELL_SUDDEN_DOOM				= not IsClassic and C_Spell.GetSpellName(81340)	-- XXX: No trigger atm - DK
---local SPELL_SWORD_AND_BOARD		= C_Spell.GetSpellName(50227)
---local SPELL_TASTE_FOR_BLOOD		= C_Spell.GetSpellName(56636)
---local SPELL_THE_ART_OF_WAR		= C_Spell.GetSpellName(59578)
-local SPELL_TIDAL_WAVES				= not IsClassic and C_Spell.GetSpellName(53390)
---local SPELL_ULTIMATUM				= C_Spell.GetSpellName(122510)
-local SPELL_VICTORY_RUSH			= not IsClassic and C_Spell.GetSpellName(SPELLID_VICTORY_RUSH)  -- XXX: Update for buff
---local SPELL_VITAL_MISTS			= C_Spell.GetSpellName(122107)
+--local SPELL_BERSERK				= GetSkillName(SPELLID_BERSERK)
+--local SPELL_BLINDSIDE				= GetSkillName(121153)
+--local SPELL_BLOODSURGE			= GetSkillName(46916)
+--local SPELL_BRAIN_FREEZE			= GetSkillName(44549)
+--local SPELL_BF_FIREBALL			= GetSkillName(57761)
+local SPELL_CLEARCASTING			= GetSkillName(16870)
+--local SPELL_DECIMATION			= GetSkillName(108869)
+local SPELL_ELUSIVE_BREW			= not IsClassic and GetSkillName(128939)
+local SPELL_EXECUTE					= GetSkillName(SPELLID_EXECUTE)
+local SPELL_FINGERS_OF_FROST		= not IsClassic and GetSkillName(112965)
+local SPELL_FREEZING_FOG			= not IsClassic and GetSkillName(59052)
+local SPELL_HAMMER_OF_WRATH			= GetSkillName(SPELLID_HAMMER_OF_WRATH)
+--local SPELL_KILL_SHOT				= GetSkillName(SPELLID_KILL_SHOT)
+local SPELL_KILLING_MACHINE			= not IsClassic and GetSkillName(51124)
+local SPELL_LAVA_SURGE				= not IsClassic and GetSkillName(SPELLID_LAVA_SURGE)
+--local SPELL_LOCK_AND_LOAD			= GetSkillName(168980)
+--local SPELL_MAELSTROM_WEAPON		= GetSkillName(53817)
+--local SPELL_MANA_TEA				= GetSkillName(115867)
+local SPELL_MISSILE_BARRAGE			= not IsClassic and GetSkillName(62401)
+--local SPELL_MOLTEN_CORE			= GetSkillName(122351)
+--local SPELL_NIGHTFALL				= GetSkillName(108558)
+local SPELL_PREDATORS_SWIFTNESS		= not IsClassic and GetSkillName(69369)
+local SPELL_PVP_TRINKET				= not IsClassic and GetSkillName(42292)
+local SPELL_REVENGE					= GetSkillName(SPELLID_REVENGE)
+local SPELL_RIME 					= not IsClassic and GetSkillName(59057)
+local SPELL_SHADOW_TRANCE			= GetSkillName(17941)
+local SPELL_SHIELD_SLAM				= GetSkillName(23922)
+--local SPELL_SHADOW_INFUSION		= GetSkillName(91342)
+--local SPELL_SHADOW_ORB			= GetSkillName(SPELLID_SHADOW_ORB)
+--local SPELL_SHOOTING_STARS		= GetSkillName(93400)
+local SPELL_SUDDEN_DEATH			= not IsClassic and GetSkillName(52437)
+local SPELL_SUDDEN_DOOM				= not IsClassic and GetSkillName(81340)	-- XXX: No trigger atm - DK
+--local SPELL_SWORD_AND_BOARD		= GetSkillName(50227)
+--local SPELL_TASTE_FOR_BLOOD		= GetSkillName(56636)
+--local SPELL_THE_ART_OF_WAR		= GetSkillName(59578)
+local SPELL_TIDAL_WAVES				= not IsClassic and GetSkillName(53390)
+--local SPELL_ULTIMATUM				= GetSkillName(122510)
+local SPELL_VICTORY_RUSH			= not IsClassic and GetSkillName(SPELLID_VICTORY_RUSH)  -- XXX: Update for buff
+--local SPELL_VITAL_MISTS			= GetSkillName(122107)
 
 -- Throttle, suppression, and other spell names.
---local SPELL_BLOOD_PRESENCE		= C_Spell.GetSpellName(48266)
-local SPELL_DRAIN_LIFE				= not IsClassic and C_Spell.GetSpellName(234153)
-local SPELL_SHADOWMEND				= not IsClassic and C_Spell.GetSpellName(39373)
---local SPELL_REFLECTIVE_SHIELD		= C_Spell.GetSpellName(58252)
-local SPELL_UNDYING_RESOLVE			= not IsClassic and C_Spell.GetSpellName(51915)
-local SPELL_VAMPIRIC_EMBRACE		= C_Spell.GetSpellName(15286)
-local SPELL_VAMPIRIC_TOUCH			= not IsClassic and C_Spell.GetSpellName(34914)
+--local SPELL_BLOOD_PRESENCE		= GetSkillName(48266)
+local SPELL_DRAIN_LIFE				= not IsClassic and GetSkillName(234153)
+local SPELL_SHADOWMEND				= not IsClassic and GetSkillName(39373)
+--local SPELL_REFLECTIVE_SHIELD		= GetSkillName(58252)
+local SPELL_UNDYING_RESOLVE			= not IsClassic and GetSkillName(51915)
+local SPELL_VAMPIRIC_EMBRACE		= GetSkillName(15286)
+local SPELL_VAMPIRIC_TOUCH			= not IsClassic and GetSkillName(34914)
 
 
 
@@ -125,7 +127,7 @@ local eventFrame
 
 -- Meta table for the differential profile tables.
 local differentialMap = {}
-local differential_mt = { __index = function(t,k) return differentialMap[t][k] end }
+local differential_mt = { __index = function(t, k) return differentialMap[t][k] end }
 local differentialCache = {}
 
 -- Holds variables to be saved between sessions.
@@ -1077,6 +1079,18 @@ if IsClassic then
 				alwaysSticky	= true,
 				fontSize		= 26,
 			},
+			NOTIFICATION_ESSENCE_CHANGE = {
+				colorG		= 0.5,
+				colorB		= 0,
+				message		= "%a " .. L.MSG_ESSENCE,
+			},
+			NOTIFICATION_ESSENCE_FULL = {
+				colorG			= 0.5,
+				colorB			= 0,
+				message			= L.MSG_ESSENCE_FULL .. "!",
+				alwaysSticky	= true,
+				fontSize		= 26,
+			},
 			NOTIFICATION_HONOR_GAIN = {
 				colorR		= 0.5,
 				colorG		= 0.5,
@@ -1536,18 +1550,18 @@ if IsClassic then
 
 
 		-- Master font settings.
-		normalFontName		= L.DEFAULT_FONT_NAME,
-		normalOutlineIndex	= 1,
-		normalFontSize		= 18,
-		normalFontAlpha		= 100,
-		critFontName		= L.DEFAULT_FONT_NAME,
-		critOutlineIndex	= 1,
-		critFontSize		= 26,
-		critFontAlpha		= 100,
+		normalFontName			= L.DEFAULT_FONT_NAME,
+		normalOutlineIndex		= 1,
+		normalFontSize			= 18,
+		normalFontAlpha			= 100,
+		critFontName			= L.DEFAULT_FONT_NAME,
+		critOutlineIndex		= 1,
+		critFontSize			= 26,
+		critFontAlpha			= 100,
 
 
 		-- Animation speed.
-		animationSpeed		= 100,
+		animationSpeed			= 100,
 
 
 		-- Partial effect settings.
@@ -1561,39 +1575,40 @@ if IsClassic then
 
 
 		-- Damage color settings.
-		physical 		= { colorR = 1, colorG = 1, colorB = 1 },
-		arcane 			= { colorR = 0.956, colorG = 0.658, colorB = 0.894 },
-		fire 			= { colorR = 0.933, colorG = 0.490, colorB = 0.501 },
-		frost 			= { colorR = 0.462, colorG = 0.792, colorB = 0.929 },
-		holy 			= { colorR = 0.976, colorG = 0.945, colorB = 0.631 },
-		nature 			= { colorR = 0.631, colorG = 0.858, colorB = 0.396 },
-		shadow 			= { colorR = 0.356, colorG = 0.290, colorB = 0.596 },
-		spellfire 		= { colorR = 0.898, colorG = 0.360, colorB = 0.501 },
-		spellfrost 		= { colorR = 0.321, colorG = 0.321, colorB = 0.8 },
-		divine 			= { colorR = 0.956, colorG = 0.894, colorB = 0.572 },
-		astral 			= { colorR = 0.737, colorG = 0.411, colorB = 0.968 },
+		physical		= { colorR = 1, colorG = 1, colorB = 1 },
+		arcane			= { colorR = 0.956, colorG = 0.658, colorB = 0.894 },
+		fire			= { colorR = 0.933, colorG = 0.490, colorB = 0.501 },
+		frost			= { colorR = 0.462, colorG = 0.792, colorB = 0.929 },
+		holy			= { colorR = 0.976, colorG = 0.945, colorB = 0.631 },
+		nature			= { colorR = 0.631, colorG = 0.858, colorB = 0.396 },
+		shadow			= { colorR = 0.356, colorG = 0.290, colorB = 0.596 },
+		spellfire		= { colorR = 0.898, colorG = 0.360, colorB = 0.501 },
+		spellfrost		= { colorR = 0.321, colorG = 0.321, colorB = 0.8 },
+		divine			= { colorR = 0.956, colorG = 0.894, colorB = 0.572 },
+		astral			= { colorR = 0.737, colorG = 0.411, colorB = 0.968 },
 		spellshadow		= { colorR = 0.450, colorG = 0.215, colorB = 0.6 },
 		radiant			= { colorR = 0.937, colorG = 0.690, colorB = 0.396 },
-		holystorm 		= { colorR = 0.752, colorG = 0.909, colorB = 0.545 },
-		holyfrost 		= { colorR = 0.545, colorG = 0.909, colorB = 0.874 },
-		volcanic 		= { colorR = 0.937, colorG = 0.545, colorB = 0.282 },
-		shadowflame 		= { colorR = 0.745, colorG = 0.333, colorB = 0.529 },
-		frostfire 		= { colorR = 0.262, colorG = 0.572, colorB = 0.666 },
-		froststorm 		= { colorR = 0.356, colorG = 0.698, colorB = 0.556 },
-		shadowfrost 		= { colorR = 0.2, colorG = 0.317, colorB = 0.607 },
-		twilight 		= { colorR = 0.631, colorG = 0.349, colorB = 0.698 },
-		plague 			= { colorR = 0.584, colorG = 0.8, colorB = 0.329 },
-		spellstrike 		= { colorR = 0.941, colorG = 0.866, colorB = 0.929 },
-		flamestrike 		= { colorR = 0.968, colorG = 0.764, colorB = 0.749 },
-		froststrike 		= { colorR = 0.678, colorG = 0.858, colorB = 0.890 },
-		stormstrike 		= { colorR = 0.698, colorG = 0.792, colorB = 0.8 },
-		shadowstrike 		= { colorR = 0.827, colorG = 0.8, colorB = 0.949 },
-		holystrike 		= { colorR = 0.968, colorG = 0.925, colorB = 0.796 },
-		elemental 		= { colorR = 0.337, colorG = 0.858, colorB = 0.682 },
-		cosmic 			= { colorR = 0.368, colorG = 0.627, colorB = 0.8 },
+		holystorm		= { colorR = 0.752, colorG = 0.909, colorB = 0.545 },
+		holyfrost		= { colorR = 0.545, colorG = 0.909, colorB = 0.874 },
+		volcanic		= { colorR = 0.937, colorG = 0.545, colorB = 0.282 },
+		shadowflame		= { colorR = 0.745, colorG = 0.333, colorB = 0.529 },
+		frostfire		= { colorR = 0.262, colorG = 0.572, colorB = 0.666 },
+		froststorm		= { colorR = 0.356, colorG = 0.698, colorB = 0.556 },
+		shadowfrost		= { colorR = 0.2, colorG = 0.317, colorB = 0.607 },
+		twilight		= { colorR = 0.631, colorG = 0.349, colorB = 0.698 },
+		plague			= { colorR = 0.584, colorG = 0.8, colorB = 0.329 },
+		spellstrike		= { colorR = 0.941, colorG = 0.866, colorB = 0.929 },
+		flamestrike		= { colorR = 0.968, colorG = 0.764, colorB = 0.749 },
+		froststrike		= { colorR = 0.678, colorG = 0.858, colorB = 0.890 },
+		stormstrike		= { colorR = 0.698, colorG = 0.792, colorB = 0.8 },
+		shadowstrike	= { colorR = 0.827, colorG = 0.8, colorB = 0.949 },
+		holystrike		= { colorR = 0.968, colorG = 0.925, colorB = 0.796 },
+		elemental		= { colorR = 0.337, colorG = 0.858, colorB = 0.682 },
+		cosmic			= { colorR = 0.368, colorG = 0.627, colorB = 0.8 },
 		chromatic		= { colorR = 0.573, colorG = 0.976, colorB = 0.098 },
-		magic 			= { colorR = 0.470, colorG = 0.937, colorB = 1 },
-		chaos 			= { colorR = 0.247, colorG = 0.152, colorB = 0.4 },
+		magic			= { colorR = 0.470, colorG = 0.937, colorB = 1 },
+		chaos			= { colorR = 0.247, colorG = 0.152, colorB = 0.4 },
+
 
 		-- Class color settings.
 		DEATHKNIGHT		= CreateClassSettingsTable("DEATHKNIGHT"),
@@ -1612,9 +1627,9 @@ if IsClassic then
 
 
 		-- Throttle settings.
-		dotThrottleDuration	= 3,
-		hotThrottleDuration	= 3,
-		powerThrottleDuration	= 3,
+		dotThrottleDuration				= 3,
+		hotThrottleDuration				= 3,
+		powerThrottleDuration			= 3,
 		throttleList = {
 			--[SPELL_BLOOD_PRESENCE]	= 5,
 			--[SPELL_DRAIN_LIFE]		= 3,
@@ -1626,33 +1641,33 @@ if IsClassic then
 
 
 		-- Spam control settings.
-		mergeExclusions		= {},
-		abilitySubstitutions	= {},
-		abilitySuppressions	= {
-			--[SPELL_UNDYING_RESOLVE]		= true,
+		mergeExclusions					= {},
+		abilitySubstitutions			= {},
+		abilitySuppressions				= {
+			--[SPELL_UNDYING_RESOLVE]	= true,
 		},
-		damageThreshold		= 0,
-		healThreshold			= 0,
-		powerThreshold			= 0,
-		hideFullHoTOverheals	= true,
-		shortenNumbers			= false,
-		shortenNumberPrecision	= 0,
-		groupNumbers			= false,
+		damageThreshold					= 0,
+		healThreshold					= 0,
+		powerThreshold					= 0,
+		hideFullHoTOverheals			= true,
+		shortenNumbers					= false,
+		shortenNumberPrecision			= 0,
+		groupNumbers					= false,
 
 
 		-- Cooldown settings.
-		cooldownExclusions		= {},
-		ignoreCooldownThreshold		= {},
-		cooldownThreshold		= 5,
+		cooldownExclusions				= {},
+		ignoreCooldownThreshold			= {},
+		cooldownThreshold				= 5,
 
 
 		-- Loot settings.
-		qualityExclusions		= {
+		qualityExclusions				= {
 			[LE_ITEM_QUALITY_POOR or Enum.ItemQuality.Poor] = true,
 		},
-		alwaysShowQuestItems	= true,
-		itemsAllowed			= {},
-		itemExclusions			= {},
+		alwaysShowQuestItems			= true,
+		itemsAllowed					= {},
+		itemExclusions					= {},
 	}
 else
 	masterProfile = {
@@ -3036,18 +3051,18 @@ else
 
 
 		-- Master font settings.
-		normalFontName		= L.DEFAULT_FONT_NAME,
-		normalOutlineIndex	= 1,
-		normalFontSize		= 18,
-		normalFontAlpha		= 100,
-		critFontName		= L.DEFAULT_FONT_NAME,
-		critOutlineIndex	= 1,
-		critFontSize		= 26,
-		critFontAlpha		= 100,
+		normalFontName			= L.DEFAULT_FONT_NAME,
+		normalOutlineIndex		= 1,
+		normalFontSize			= 18,
+		normalFontAlpha			= 100,
+		critFontName			= L.DEFAULT_FONT_NAME,
+		critOutlineIndex		= 1,
+		critFontSize			= 26,
+		critFontAlpha			= 100,
 
 
 		-- Animation speed.
-		animationSpeed		= 100,
+		animationSpeed			= 100,
 
 
 		-- Partial effect settings.
@@ -3061,39 +3076,39 @@ else
 
 
 		-- Damage color settings.
-		physical 		= { colorR = 1, colorG = 1, colorB = 1 },
-		arcane 			= { colorR = 0.956, colorG = 0.658, colorB = 0.894 },
-		fire 			= { colorR = 0.933, colorG = 0.490, colorB = 0.501 },
-		frost 			= { colorR = 0.462, colorG = 0.792, colorB = 0.929 },
-		holy 			= { colorR = 0.976, colorG = 0.945, colorB = 0.631 },
-		nature 			= { colorR = 0.631, colorG = 0.858, colorB = 0.396 },
-		shadow 			= { colorR = 0.356, colorG = 0.290, colorB = 0.596 },
-		spellfire 		= { colorR = 0.898, colorG = 0.360, colorB = 0.501 },
-		spellfrost 		= { colorR = 0.321, colorG = 0.321, colorB = 0.8 },
-		divine 			= { colorR = 0.956, colorG = 0.894, colorB = 0.572 },
-		astral 			= { colorR = 0.737, colorG = 0.411, colorB = 0.968 },
+		physical		= { colorR = 1, colorG = 1, colorB = 1 },
+		arcane			= { colorR = 0.956, colorG = 0.658, colorB = 0.894 },
+		fire			= { colorR = 0.933, colorG = 0.490, colorB = 0.501 },
+		frost			= { colorR = 0.462, colorG = 0.792, colorB = 0.929 },
+		holy			= { colorR = 0.976, colorG = 0.945, colorB = 0.631 },
+		nature			= { colorR = 0.631, colorG = 0.858, colorB = 0.396 },
+		shadow			= { colorR = 0.356, colorG = 0.290, colorB = 0.596 },
+		spellfire		= { colorR = 0.898, colorG = 0.360, colorB = 0.501 },
+		spellfrost		= { colorR = 0.321, colorG = 0.321, colorB = 0.8 },
+		divine			= { colorR = 0.956, colorG = 0.894, colorB = 0.572 },
+		astral			= { colorR = 0.737, colorG = 0.411, colorB = 0.968 },
 		spellshadow		= { colorR = 0.450, colorG = 0.215, colorB = 0.6 },
 		radiant			= { colorR = 0.937, colorG = 0.690, colorB = 0.396 },
-		holystorm 		= { colorR = 0.752, colorG = 0.909, colorB = 0.545 },
-		holyfrost 		= { colorR = 0.545, colorG = 0.909, colorB = 0.874 },
-		volcanic 		= { colorR = 0.937, colorG = 0.545, colorB = 0.282 },
-		shadowflame 		= { colorR = 0.745, colorG = 0.333, colorB = 0.529 },
-		frostfire 		= { colorR = 0.262, colorG = 0.572, colorB = 0.666 },
-		froststorm 		= { colorR = 0.356, colorG = 0.698, colorB = 0.556 },
-		shadowfrost 		= { colorR = 0.2, colorG = 0.317, colorB = 0.607 },
-		twilight 		= { colorR = 0.631, colorG = 0.349, colorB = 0.698 },
-		plague 			= { colorR = 0.584, colorG = 0.8, colorB = 0.329 },
-		spellstrike 		= { colorR = 0.941, colorG = 0.866, colorB = 0.929 },
-		flamestrike 		= { colorR = 0.968, colorG = 0.764, colorB = 0.749 },
-		froststrike 		= { colorR = 0.678, colorG = 0.858, colorB = 0.890 },
-		stormstrike 		= { colorR = 0.698, colorG = 0.792, colorB = 0.8 },
-		shadowstrike 		= { colorR = 0.827, colorG = 0.8, colorB = 0.949 },
-		holystrike 		= { colorR = 0.968, colorG = 0.925, colorB = 0.796 },
-		elemental 		= { colorR = 0.337, colorG = 0.858, colorB = 0.682 },
-		cosmic 			= { colorR = 0.368, colorG = 0.627, colorB = 0.8 },
-		chromatic			= { colorR = 0.573, colorG = 0.976, colorB = 0.098 },
-		magic 			= { colorR = 0.470, colorG = 0.937, colorB = 1 },
-		chaos 			= { colorR = 0.247, colorG = 0.152, colorB = 0.4 },												  
+		holystorm		= { colorR = 0.752, colorG = 0.909, colorB = 0.545 },
+		holyfrost		= { colorR = 0.545, colorG = 0.909, colorB = 0.874 },
+		volcanic		= { colorR = 0.937, colorG = 0.545, colorB = 0.282 },
+		shadowflame		= { colorR = 0.745, colorG = 0.333, colorB = 0.529 },
+		frostfire		= { colorR = 0.262, colorG = 0.572, colorB = 0.666 },
+		froststorm		= { colorR = 0.356, colorG = 0.698, colorB = 0.556 },
+		shadowfrost		= { colorR = 0.2, colorG = 0.317, colorB = 0.607 },
+		twilight		= { colorR = 0.631, colorG = 0.349, colorB = 0.698 },
+		plague			= { colorR = 0.584, colorG = 0.8, colorB = 0.329 },
+		spellstrike		= { colorR = 0.941, colorG = 0.866, colorB = 0.929 },
+		flamestrike		= { colorR = 0.968, colorG = 0.764, colorB = 0.749 },
+		froststrike		= { colorR = 0.678, colorG = 0.858, colorB = 0.890 },
+		stormstrike		= { colorR = 0.698, colorG = 0.792, colorB = 0.8 },
+		shadowstrike	= { colorR = 0.827, colorG = 0.8, colorB = 0.949 },
+		holystrike		= { colorR = 0.968, colorG = 0.925, colorB = 0.796 },
+		elemental		= { colorR = 0.337, colorG = 0.858, colorB = 0.682 },
+		cosmic			= { colorR = 0.368, colorG = 0.627, colorB = 0.8 },
+		chromatic		= { colorR = 0.573, colorG = 0.976, colorB = 0.098 },
+		magic			= { colorR = 0.470, colorG = 0.937, colorB = 1 },
+		chaos			= { colorR = 0.247, colorG = 0.152, colorB = 0.4 },
 
 
 		-- Class color settings.
@@ -3113,47 +3128,47 @@ else
 
 
 		-- Throttle settings.
-		dotThrottleDuration	= 3,
-		hotThrottleDuration	= 3,
-		powerThrottleDuration	= 3,
+		dotThrottleDuration				= 3,
+		hotThrottleDuration				= 3,
+		powerThrottleDuration			= 3,
 		throttleList = {
 			--[SPELL_BLOOD_PRESENCE]	= 5,
-			[SPELL_DRAIN_LIFE]		= 3,
-			[SPELL_SHADOWMEND]		= 5,
+			[SPELL_DRAIN_LIFE]			= 3,
+			[SPELL_SHADOWMEND]			= 5,
 			--[SPELL_REFLECTIVE_SHIELD]	= 5,
 			[SPELL_VAMPIRIC_EMBRACE]	= 5,
-			[SPELL_VAMPIRIC_TOUCH]	= 5,
+			[SPELL_VAMPIRIC_TOUCH]		= 5,
 		},
 
 
 		-- Spam control settings.
-		mergeExclusions		= {},
-		abilitySubstitutions	= {},
-		abilitySuppressions	= {
+		mergeExclusions					= {},
+		abilitySubstitutions			= {},
+		abilitySuppressions				= {
 			[SPELL_UNDYING_RESOLVE]		= true,
 		},
-		damageThreshold		= 0,
-		healThreshold			= 0,
-		powerThreshold			= 0,
-		hideFullHoTOverheals	= true,
-		shortenNumbers			= false,
-		shortenNumberPrecision	= 0,
-		groupNumbers			= false,
+		damageThreshold					= 0,
+		healThreshold					= 0,
+		powerThreshold					= 0,
+		hideFullHoTOverheals			= true,
+		shortenNumbers					= false,
+		shortenNumberPrecision			= 0,
+		groupNumbers					= false,
 
 
 		-- Cooldown settings.
-		cooldownExclusions		= {},
-		ignoreCooldownThreshold		= {},
-		cooldownThreshold		= 5,
+		cooldownExclusions				= {},
+		ignoreCooldownThreshold			= {},
+		cooldownThreshold				= 5,
 
 
 		-- Loot settings.
-		qualityExclusions		= {
+		qualityExclusions				= {
 			[LE_ITEM_QUALITY_POOR or Enum.ItemQuality.Poor] = true,
 		},
-		alwaysShowQuestItems	= true,
-		itemsAllowed			= {},
-		itemExclusions			= {},
+		alwaysShowQuestItems			= true,
+		itemsAllowed					= {},
+		itemExclusions					= {},
 	}
 end
 
@@ -3308,28 +3323,26 @@ end
 -- ****************************************************************************
 local function SetupBlizzardOptions()
 	-- Create a container frame for the Blizzard options area.
-	local category = Settings.RegisterCanvasLayoutCategory(frame, "MikScrollingBattleText")
 	local frame = CreateFrame("Frame")
 	frame.name = "MikScrollingBattleText"
 
 	-- Create an option button in the center of the frame to launch MSBT's options.
-	local button = CreateFrame("Button", nil, frame, IsClassic and "OptionsButtonTemplate" or "UIPanelButtonTemplate")
+	local button = CreateFrame("Button", nil, frame, IsCataClassic and "OptionsButtonTemplate" or "UIPanelButtonTemplate")
 	button:SetSize(100, 24)
 	button:SetPoint("CENTER")
 	button:SetText(MikSBT.COMMAND)
-	button:SetScript("OnClick",
-		function (this)
-			ShowOptions()
-		end
-	)
+	button:SetScript("OnClick", function(this)
+		ShowOptions()
+	end)
 
 	-- Add the frame as a new category to Blizzard's interface options.
-	if InterfaceOptions_AddCategory then
-	InterfaceOptions_AddCategory(frame)
-else
-	local category, layout = Settings.RegisterCanvasLayoutCategory(frame, frame.name);
-	Settings.RegisterAddOnCategory(category);
-end
+	if Settings and Settings.RegisterCanvasLayoutCategory then
+		local category = Settings.RegisterCanvasLayoutCategory(frame, frame.name)
+		category.ID = frame.name
+		Settings.RegisterAddOnCategory(category)
+	else
+		InterfaceOptions_AddCategory(frame)
+	end
 end
 
 
