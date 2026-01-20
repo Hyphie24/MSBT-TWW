@@ -1,3 +1,5 @@
+***MSBT IS UNFORTUNATELY AFFECTED BY THE MIDNIGHT CHANGES, IT WILL NOT BE UPDATED***
+
 ***NOT AN OFFICIAL TWW RELEASE***
 I am not the original author or maintainer, just a fan of the addon hoping to get this working for TWW
 
